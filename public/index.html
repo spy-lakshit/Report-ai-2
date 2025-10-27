@@ -970,8 +970,10 @@
             
             // Show progress section with animation
             const progressSection = document.getElementById('progressSection');
-            progressSection.style.display = 'block';
-            progressSection.style.animation = 'slideUp 0.5s ease-out';
+            if (progressSection) {
+                progressSection.style.display = 'block';
+                progressSection.style.animation = 'slideUp 0.5s ease-out';
+            }
             
             const generateBtn = document.getElementById('generateBtn');
             generateBtn.disabled = true;
@@ -1028,7 +1030,10 @@
 
         // Show progress modal
         function showProgress() {
-            document.getElementById('progressModal').style.display = 'flex';
+            const progressSection = document.getElementById('progressSection');
+            if (progressSection) {
+                progressSection.style.display = 'block';
+            }
         }
         
         // Update progress display
@@ -1037,13 +1042,18 @@
             const progressText = document.getElementById('progressText');
             const progressEta = document.getElementById('progressEta');
             
-            progressFill.style.width = progress + '%';
-            progressText.textContent = status;
-            
-            if (timeRemaining > 0) {
-                progressEta.textContent = `ETA: ${timeRemaining}s`;
-            } else {
-                progressEta.textContent = '';
+            if (progressFill) {
+                progressFill.style.width = progress + '%';
+            }
+            if (progressText) {
+                progressText.textContent = status;
+            }
+            if (progressEta) {
+                if (timeRemaining > 0) {
+                    progressEta.textContent = `ETA: ${timeRemaining}s`;
+                } else {
+                    progressEta.textContent = '';
+                }
             }
         }
 
@@ -1086,12 +1096,21 @@
             const downloadSection = document.getElementById('downloadSection');
             
             // Hide progress with fade out
-            progressSection.style.opacity = '0';
-            progressSection.style.transform = 'translateY(-20px)';
+            const progressSection = document.getElementById('progressSection');
+            const downloadSection = document.getElementById('downloadSection');
+            
+            if (progressSection) {
+                progressSection.style.opacity = '0';
+                progressSection.style.transform = 'translateY(-20px)';
+            }
             
             setTimeout(() => {
-                progressSection.style.display = 'none';
-                downloadSection.style.display = 'block';
+                if (progressSection) {
+                    progressSection.style.display = 'none';
+                }
+                if (downloadSection) {
+                    downloadSection.style.display = 'block';
+                }
                 
                 // Celebration effect
                 createConfetti();
