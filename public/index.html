@@ -828,6 +828,17 @@
         <div class="form-container fade-in">
             <h2 class="form-title">Generate Your Report</h2>
             
+            <div style="background: rgba(79, 172, 254, 0.1); border: 1px solid rgba(79, 172, 254, 0.3); border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
+                <h4 style="color: #4facfe; margin-bottom: 1rem; font-size: 1.1rem;">🔑 API Key Required</h4>
+                <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1rem; line-height: 1.5;">
+                    You need a free Google Gemini API key to generate reports. It takes 30 seconds to get one!
+                </p>
+                <a href="https://makersuite.google.com/app/apikey" target="_blank" 
+                   style="display: inline-block; background: #4facfe; color: white; padding: 0.8rem 1.5rem; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;">
+                    🚀 Get Free API Key
+                </a>
+            </div>
+            
             <form id="reportForm">
                 <div class="form-grid">
                     <div class="form-group">
@@ -868,6 +879,15 @@
                     <div class="form-group full-width">
                         <label class="form-label" for="projectDescription">Project Description <span class="required">*</span></label>
                         <textarea id="projectDescription" name="projectDescription" class="form-textarea" placeholder="Describe your project in detail, including technologies used, objectives, and key features..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label" for="apiKey">Google Gemini API Key <span class="required">*</span></label>
+                        <input type="password" id="apiKey" name="apiKey" class="form-input" placeholder="Enter your Google Gemini API key (AIza...)" required>
+                        <small style="color: rgba(255, 255, 255, 0.7); font-size: 0.85rem; margin-top: 0.5rem; display: block;">
+                            🔒 Your API key is secure and only used for this session. Get your free API key from 
+                            <a href="https://makersuite.google.com/app/apikey" target="_blank" style="color: #4facfe;">Google AI Studio</a>
+                        </small>
                     </div>
                     
                     <div class="form-group">
