@@ -1,0 +1,12 @@
+{
+  "name": "ai-report-generator",
+  "version": "1.0.0",
+  "description": "AI Report Generator",
+  "dependencies": {
+    "docx": "^8.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
