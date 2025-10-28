@@ -402,7 +402,7 @@ function generateChapterContent(chapterNum, chapterTitle, config) {
     const title = config.projectTitle.toLowerCase();
     const description = config.projectDescription.toLowerCase();
     const type = config.reportType.toLowerCase();
-    
+
     // Determine project category
     let projectCategory = "general";
     if (title.includes('java') || title.includes('mysql') || title.includes('database') || description.includes('java') || description.includes('database') || description.includes('sql')) {
@@ -422,7 +422,7 @@ function generateChapterContent(chapterNum, chapterTitle, config) {
 // Function to generate dynamic content for each chapter
 function generateDynamicChapterContent(chapterNum, chapterTitle, config, reportType, projectCategory) {
     const contentKey = `${reportType}-${projectCategory}-${chapterNum}`;
-    
+
     // Dynamic content templates based on report type and project category
     const contentTemplates = {
         // THESIS REPORTS - Academic Research Focus
@@ -611,7 +611,7 @@ The methodology includes: comprehensive data exploration and analysis, iterative
 
     // Get content for the specific combination, or generate generic content
     let content = contentTemplates[contentKey];
-    
+
     if (!content) {
         // Generate generic content for chapters 2-6 or missing combinations
         if (chapterNum === 7) {
@@ -623,55 +623,234 @@ The methodology includes: comprehensive data exploration and analysis, iterative
             content = generateGenericIntroductionContent(config, reportType, projectCategory);
         }
     }
-    
+
     return content;
 }
 
-// Generate generic content for chapters 2-6 based on report type and project category
+// Generate comprehensive dynamic content for chapters 2-6 based on report type and project category
 function generateGenericChapterContent(chapterNum, chapterTitle, config, reportType, projectCategory) {
-    const sectionTitles = chapterTitle.split(' AND ');
-    const mainTitle = sectionTitles[0] || chapterTitle;
-    
-    let content = `${chapterNum}.1 ${mainTitle} Overview\n\n`;
-    
-    if (reportType === 'thesis') {
-        content += `This chapter presents a comprehensive analysis of ${chapterTitle.toLowerCase()} in the context of ${config.projectTitle}. The research methodology employed follows rigorous academic standards with emphasis on empirical validation and theoretical contribution.\n\n`;
-        content += `The theoretical framework underlying this research draws from established principles in ${projectCategory === 'java-database' ? 'database systems and software engineering' : projectCategory === 'ai-ml' ? 'machine learning and artificial intelligence' : 'software development and system design'}. The methodology ensures reproducible results and contributes to the existing body of knowledge.\n\n`;
-    } else if (reportType === 'internship') {
-        content += `This chapter documents the practical experience gained in ${chapterTitle.toLowerCase()} during the internship at ${config.institution}. The learning process involved hands-on application of theoretical knowledge under professional supervision.\n\n`;
-        content += `The practical training focused on industry-standard practices in ${projectCategory === 'java-database' ? 'Java enterprise development and database management' : projectCategory === 'web-development' ? 'modern web development and full-stack technologies' : 'software development and system implementation'}. The experience provided valuable insights into professional development practices.\n\n`;
-    } else {
-        content += `This chapter details the ${chapterTitle.toLowerCase()} phase of the ${config.projectTitle} project. The implementation follows industry best practices and demonstrates practical application of software engineering principles.\n\n`;
-        content += `The development approach emphasizes ${projectCategory === 'java-database' ? 'robust database design and efficient Java implementation' : projectCategory === 'ai-ml' ? 'rigorous model development and validation procedures' : 'scalable architecture and maintainable code design'}. The methodology ensures high-quality deliverables and optimal system performance.\n\n`;
+    // Generate much more detailed and varied content based on combinations
+    const contentKey = `${reportType}-${projectCategory}-${chapterNum}`;
+
+    // Comprehensive content templates for all combinations
+    const detailedTemplates = {
+        // JAVA-DATABASE PROJECT CHAPTERS
+        "project-java-database-2": `2.1 System Requirements Analysis and Specification
+
+The requirements analysis for ${config.projectTitle} involved comprehensive stakeholder interviews, business process analysis, and technical feasibility studies. The functional requirements include user authentication and authorization, comprehensive data management capabilities, real-time data processing and validation, advanced reporting and analytics features, and scalable system architecture supporting concurrent users.
+
+Non-functional requirements encompass system performance targets of sub-second response times for database queries, support for minimum 100 concurrent users, 99.9% system availability, comprehensive security measures including data encryption and access controls, and cross-platform compatibility across Windows, Linux, and macOS environments.
+
+2.2 Database Schema Design and Optimization
+
+The MySQL database schema design follows third normal form principles with carefully planned entity relationships. Primary entities include User management with role-based access control, comprehensive data storage with proper indexing strategies, audit trail implementation for data integrity, backup and recovery mechanisms, and performance optimization through query analysis and index tuning.
+
+The database architecture implements advanced features including stored procedures for complex business logic, triggers for automated data validation and logging, views for simplified data access and security, proper foreign key constraints ensuring referential integrity, and comprehensive indexing strategy optimizing query performance.
+
+2.3 Java Application Architecture and Design Patterns
+
+The Java application architecture follows Model-View-Controller (MVC) design pattern with clear separation of concerns. The implementation utilizes proven design patterns including Singleton for database connection management, Factory pattern for object creation, Observer pattern for event handling, Strategy pattern for algorithm selection, and Command pattern for user action processing.
+
+The architectural components include data access layer with optimized JDBC implementation, business logic layer with comprehensive validation rules, presentation layer with intuitive user interfaces, service layer for external integrations, and utility layer for common functionality and helper methods.`,
+
+        "project-java-database-3": `3.1 Development Environment and Technology Stack
+
+The development environment for ${config.projectTitle} utilizes industry-standard tools and frameworks. The technology stack includes Java SE 11 with advanced features and lambda expressions, MySQL 8.0 with enhanced performance capabilities, JDBC 4.2 for optimized database connectivity, Maven for dependency management and build automation, and JUnit 5 for comprehensive unit testing.
+
+Development tools encompass IntelliJ IDEA for advanced code development and debugging, MySQL Workbench for database design and administration, Git for version control and collaborative development, Jenkins for continuous integration and deployment, and SonarQube for code quality analysis and improvement.
+
+3.2 Database Implementation and Configuration
+
+The MySQL database implementation includes comprehensive schema creation with optimized data types, advanced indexing strategies for query performance, stored procedures for complex business operations, triggers for automated data validation and logging, and user-defined functions for specialized calculations.
+
+Database configuration optimizations include connection pooling for improved performance, transaction isolation level configuration, query cache optimization for frequently accessed data, buffer pool sizing for optimal memory utilization, and comprehensive backup and recovery procedures ensuring data integrity.
+
+3.3 Java Application Development and Integration
+
+The Java application development follows object-oriented programming principles with emphasis on code reusability and maintainability. Key implementation aspects include comprehensive exception handling with custom exception classes, logging framework integration for debugging and monitoring, configuration management through properties files, multi-threading support for concurrent operations, and comprehensive input validation and sanitization.
+
+Integration components include JDBC connection pooling for database efficiency, RESTful API development for external integrations, JSON processing for data interchange, email notification system for user communications, and comprehensive security implementation including authentication and authorization mechanisms.`,
+
+        "project-java-database-4": `4.1 User Interface Design and Implementation
+
+The user interface design for ${config.projectTitle} emphasizes usability, accessibility, and professional appearance. The implementation utilizes Java Swing with modern look-and-feel themes, responsive layout managers for different screen sizes, comprehensive input validation with user-friendly error messages, intuitive navigation with consistent design patterns, and accessibility features supporting users with disabilities.
+
+Advanced UI features include data visualization through charts and graphs, advanced search and filtering capabilities, export functionality for reports and data, print support for documents and reports, and comprehensive help system with context-sensitive assistance.
+
+4.2 Business Logic Implementation and Validation
+
+The business logic implementation encompasses comprehensive data validation rules, complex calculation algorithms, workflow management for business processes, audit trail functionality for compliance requirements, and integration with external systems and services.
+
+Validation mechanisms include client-side validation for immediate user feedback, server-side validation for security and data integrity, database constraints for referential integrity, business rule validation for domain-specific requirements, and comprehensive error handling with meaningful user messages.
+
+4.3 Performance Optimization and Scalability
+
+Performance optimization strategies include database query optimization through proper indexing, connection pooling for efficient resource utilization, caching mechanisms for frequently accessed data, asynchronous processing for long-running operations, and memory management optimization to prevent memory leaks.
+
+Scalability considerations encompass horizontal scaling capabilities, load balancing support, database partitioning strategies, microservices architecture preparation, and comprehensive monitoring and alerting systems for performance tracking.`,
+
+        "project-java-database-5": `5.1 Testing Strategy and Implementation
+
+The comprehensive testing strategy for ${config.projectTitle} includes unit testing with JUnit 5 covering all business logic components, integration testing for database connectivity and external services, system testing for end-to-end functionality validation, performance testing under various load conditions, and security testing for vulnerability assessment.
+
+Testing implementation encompasses automated test suites with continuous integration, mock objects for isolated unit testing, test data management with setup and teardown procedures, code coverage analysis ensuring comprehensive testing, and regression testing for change impact assessment.
+
+5.2 Quality Assurance and Code Review
+
+Quality assurance processes include comprehensive code review procedures, static code analysis using SonarQube, coding standards enforcement, documentation review and validation, and user acceptance testing with stakeholder involvement.
+
+Code quality metrics encompass cyclomatic complexity analysis, code duplication detection, maintainability index calculation, technical debt assessment, and comprehensive documentation coverage ensuring long-term maintainability.
+
+5.3 Deployment and Production Readiness
+
+Deployment preparation includes comprehensive deployment documentation, environment configuration management, database migration scripts, security configuration validation, and performance monitoring setup.
+
+Production readiness encompasses backup and recovery procedures, monitoring and alerting configuration, security hardening implementation, scalability testing validation, and comprehensive user training and documentation.`,
+
+        "project-java-database-6": `6.1 System Performance Analysis and Metrics
+
+The performance analysis of ${config.projectTitle} demonstrates excellent system responsiveness with average query response times under 200 milliseconds, successful handling of 150+ concurrent users, 99.95% system uptime during testing period, efficient memory utilization with minimal garbage collection impact, and optimal database performance with properly tuned queries.
+
+Performance metrics include throughput analysis showing 1000+ transactions per minute, latency measurements across different system components, resource utilization monitoring for CPU, memory, and disk usage, scalability testing results under increasing load conditions, and comprehensive benchmarking against industry standards.
+
+6.2 User Acceptance and Feedback Analysis
+
+User acceptance testing results show 95% user satisfaction rating, intuitive interface design with minimal training requirements, comprehensive functionality meeting all specified requirements, reliable system performance under normal operating conditions, and positive feedback on system usability and efficiency.
+
+Feedback analysis encompasses usability testing results, feature utilization statistics, user workflow efficiency improvements, error rate analysis and resolution, and comprehensive user training effectiveness assessment.
+
+6.3 Security Assessment and Compliance
+
+Security assessment results demonstrate robust authentication and authorization mechanisms, comprehensive data encryption for sensitive information, secure communication protocols for data transmission, comprehensive audit logging for compliance requirements, and vulnerability assessment with no critical security issues identified.
+
+Compliance validation includes data protection regulation adherence, industry standard security protocol implementation, comprehensive access control validation, security incident response procedures, and regular security assessment and update procedures.`,
+
+        // AI-ML PROJECT CHAPTERS
+        "project-ai-ml-2": `2.1 Machine Learning Problem Formulation and Analysis
+
+The machine learning problem formulation for ${config.projectTitle} involves comprehensive data analysis, feature identification, and algorithm selection. The problem is classified as ${config.projectTitle.toLowerCase().includes('classification') ? 'a supervised classification task' : config.projectTitle.toLowerCase().includes('prediction') ? 'a supervised regression problem' : 'a complex pattern recognition challenge'} requiring advanced analytical approaches.
+
+Data analysis encompasses exploratory data analysis revealing key patterns and relationships, statistical analysis of feature distributions and correlations, missing data assessment and imputation strategies, outlier detection and handling procedures, and comprehensive data quality assessment ensuring reliable model training.
+
+2.2 Feature Engineering and Data Preprocessing
+
+Feature engineering strategies include domain-specific feature creation based on business knowledge, automated feature selection using statistical methods, dimensionality reduction through principal component analysis, feature scaling and normalization for algorithm optimization, and comprehensive feature validation ensuring predictive power.
+
+Data preprocessing encompasses data cleaning and validation procedures, handling missing values through advanced imputation techniques, categorical variable encoding using appropriate methods, temporal feature extraction for time-series data, and comprehensive data transformation ensuring optimal model performance.
+
+2.3 Algorithm Selection and Model Architecture
+
+Algorithm selection process includes comparative analysis of multiple machine learning approaches, performance benchmarking across different algorithm families, hyperparameter optimization using grid search and random search, cross-validation strategies for robust model evaluation, and ensemble method implementation for improved accuracy.
+
+Model architecture design encompasses neural network architecture for deep learning approaches, decision tree optimization for interpretable models, support vector machine configuration for complex decision boundaries, clustering algorithm selection for unsupervised learning, and comprehensive model validation ensuring generalization capability.`,
+
+        "project-ai-ml-3": `3.1 Data Collection and Preparation Pipeline
+
+The data collection pipeline for ${config.projectTitle} implements comprehensive data acquisition from multiple sources, automated data validation and quality checks, real-time data processing capabilities, scalable data storage solutions, and comprehensive data governance ensuring compliance and security.
+
+Data preparation encompasses automated data cleaning procedures, feature extraction from raw data sources, data transformation and normalization processes, temporal data alignment for time-series analysis, and comprehensive data validation ensuring model training reliability.
+
+3.2 Model Development and Training Procedures
+
+Model development follows rigorous machine learning best practices including systematic hyperparameter tuning, cross-validation for robust performance estimation, regularization techniques preventing overfitting, ensemble methods for improved accuracy, and comprehensive model validation ensuring generalization capability.
+
+Training procedures encompass automated model training pipelines, distributed computing for large-scale training, model versioning and experiment tracking, comprehensive performance monitoring during training, and automated model selection based on validation metrics.
+
+3.3 Performance Optimization and Scalability
+
+Performance optimization strategies include algorithm efficiency improvements, parallel processing implementation, memory optimization for large datasets, GPU acceleration for deep learning models, and comprehensive performance profiling identifying bottlenecks.
+
+Scalability considerations encompass distributed computing architecture, cloud-based model training and deployment, automated scaling based on demand, comprehensive monitoring and alerting systems, and cost optimization strategies for production deployment.`,
+
+        // WEB DEVELOPMENT INTERNSHIP CHAPTERS  
+        "internship-web-development-2": `2.1 Modern Web Development Technologies and Frameworks
+
+The internship experience at ${config.institution} provided comprehensive exposure to modern web development technologies including React.js for dynamic frontend development, Node.js for scalable backend services, Express.js for RESTful API development, MongoDB for flexible data storage, and comprehensive development tools for efficient workflow.
+
+Technology learning encompassed advanced JavaScript ES6+ features and best practices, responsive web design using CSS Grid and Flexbox, modern build tools including Webpack and Babel, version control with Git and collaborative development workflows, and comprehensive testing frameworks for quality assurance.
+
+2.2 Frontend Development with React.js and Modern JavaScript
+
+Frontend development training included React.js component architecture and lifecycle management, state management using Redux and Context API, modern JavaScript features including async/await and destructuring, responsive design implementation with CSS frameworks, and comprehensive user experience optimization techniques.
+
+Advanced frontend concepts encompassed single-page application development, progressive web app implementation, performance optimization through code splitting and lazy loading, accessibility implementation following WCAG guidelines, and comprehensive cross-browser compatibility testing.
+
+2.3 Backend Development with Node.js and API Design
+
+Backend development experience included Node.js server development with Express.js framework, RESTful API design and implementation, database integration with MongoDB and Mongoose, authentication and authorization implementation, and comprehensive error handling and logging mechanisms.
+
+API development encompassed comprehensive endpoint design and documentation, data validation and sanitization procedures, rate limiting and security implementation, comprehensive testing with automated test suites, and deployment strategies for production environments.`,
+
+        // THESIS AI-ML CHAPTERS
+        "thesis-ai-ml-2": `2.1 Theoretical Foundations and Literature Review
+
+The theoretical foundation for ${config.projectTitle} draws from extensive literature in machine learning, artificial intelligence, and domain-specific applications. The literature review encompasses seminal works in neural network architectures, recent advances in deep learning methodologies, comparative studies of algorithm performance, theoretical analysis of model complexity, and comprehensive survey of current research trends.
+
+Research gap analysis reveals opportunities for innovation in algorithm optimization, model interpretability enhancement, scalability improvements for large datasets, real-time processing capabilities, and comprehensive evaluation methodologies for domain-specific applications.
+
+2.2 Mathematical Framework and Algorithm Analysis
+
+The mathematical framework encompasses statistical learning theory foundations, optimization theory for model training, probability theory for uncertainty quantification, information theory for feature selection, and comprehensive mathematical analysis of algorithm convergence and stability.
+
+Algorithm analysis includes computational complexity assessment, theoretical performance bounds, convergence analysis for iterative algorithms, statistical significance testing for model comparison, and comprehensive mathematical validation of proposed methodologies.
+
+2.3 Research Methodology and Experimental Design
+
+Research methodology follows rigorous scientific principles including controlled experimental design, statistical hypothesis testing, comprehensive validation procedures, reproducibility requirements, and ethical considerations for data usage and algorithm deployment.
+
+Experimental design encompasses systematic parameter space exploration, statistical significance testing for performance comparisons, comprehensive baseline establishment, ablation studies for component analysis, and rigorous evaluation metrics ensuring reliable research conclusions.`
+    };
+
+    // Get detailed content if available, otherwise generate generic content
+    let content = detailedTemplates[contentKey];
+
+    if (!content) {
+        // Fallback to more generic but still dynamic content
+        const sectionTitles = chapterTitle.split(' AND ');
+        const mainTitle = sectionTitles[0] || chapterTitle;
+
+        content = `${chapterNum}.1 ${mainTitle} Overview and Analysis\n\n`;
+
+        if (reportType === 'thesis') {
+            content += `This chapter presents comprehensive research analysis of ${chapterTitle.toLowerCase()} in the context of ${config.projectTitle}. The research methodology follows rigorous academic standards with emphasis on empirical validation, statistical significance testing, and theoretical contribution to the field.\n\n`;
+            content += `The theoretical framework draws from established principles in ${projectCategory === 'java-database' ? 'database systems theory, software engineering principles, and enterprise architecture patterns' : projectCategory === 'ai-ml' ? 'machine learning theory, statistical learning principles, and artificial intelligence methodologies' : 'computer science fundamentals and software engineering best practices'}.\n\n`;
+        } else if (reportType === 'internship') {
+            content += `This chapter documents comprehensive practical experience in ${chapterTitle.toLowerCase()} gained during the professional internship at ${config.institution}. The learning process involved hands-on application of theoretical knowledge under expert supervision and mentorship.\n\n`;
+            content += `The practical training focused on industry-standard practices including ${projectCategory === 'java-database' ? 'enterprise Java development, database administration, and production system management' : projectCategory === 'web-development' ? 'modern web development frameworks, full-stack architecture, and deployment strategies' : 'professional software development practices and industry workflows'}.\n\n`;
+        } else {
+            content += `This chapter details the comprehensive ${chapterTitle.toLowerCase()} phase of the ${config.projectTitle} project. The implementation follows industry best practices and demonstrates practical application of advanced software engineering principles.\n\n`;
+            content += `The development approach emphasizes ${projectCategory === 'java-database' ? 'robust database design, efficient Java implementation, and enterprise-grade security measures' : projectCategory === 'ai-ml' ? 'rigorous model development, comprehensive validation procedures, and scalable deployment architecture' : 'maintainable code design, scalable architecture, and comprehensive testing strategies'}.\n\n`;
+        }
+
+        content += `${chapterNum}.2 Technical Implementation and Methodology\n\n`;
+
+        // Add much more detailed technical content based on project category
+        if (projectCategory === 'java-database') {
+            content += `The technical implementation encompasses advanced Java programming techniques including design patterns (Singleton, Factory, Observer, Strategy), comprehensive exception handling with custom exception hierarchies, multi-threading for concurrent operations, and advanced JDBC programming with connection pooling and transaction management.\n\n`;
+            content += `Database implementation includes normalized schema design following third normal form principles, advanced indexing strategies for query optimization, stored procedures for complex business logic, triggers for automated data validation, and comprehensive backup and recovery procedures ensuring data integrity and availability.\n\n`;
+        } else if (projectCategory === 'ai-ml') {
+            content += `The technical implementation involves advanced machine learning algorithms including supervised learning (classification and regression), unsupervised learning (clustering and dimensionality reduction), deep learning with neural networks, ensemble methods for improved accuracy, and comprehensive model validation using cross-validation and statistical testing.\n\n`;
+            content += `Implementation utilizes industry-standard libraries including scikit-learn for traditional machine learning, TensorFlow/PyTorch for deep learning, pandas for data manipulation, NumPy for numerical computing, and comprehensive visualization tools for data analysis and model interpretation.\n\n`;
+        } else if (projectCategory === 'web-development') {
+            content += `The technical implementation covers comprehensive full-stack development including React.js for dynamic frontend interfaces, Node.js with Express.js for scalable backend services, RESTful API design and implementation, database integration with MongoDB/MySQL, and comprehensive authentication and authorization systems.\n\n`;
+            content += `Modern development practices include responsive web design using CSS Grid and Flexbox, progressive web app implementation, performance optimization through code splitting and lazy loading, comprehensive testing with Jest and Cypress, and deployment strategies using Docker and cloud platforms.\n\n`;
+        } else {
+            content += `The technical implementation follows software engineering best practices including modular architecture design, comprehensive error handling and logging, automated testing with unit and integration tests, continuous integration and deployment pipelines, and comprehensive documentation for maintainability.\n\n`;
+            content += `Quality assurance encompasses code review procedures, static analysis tools, performance profiling and optimization, security vulnerability assessment, and comprehensive user acceptance testing ensuring high-quality deliverables.\n\n`;
+        }
+
+        content += `${chapterNum}.3 Results, Analysis, and Validation\n\n`;
+        content += `The implementation results demonstrate successful achievement of all specified objectives with comprehensive performance metrics validating system effectiveness. ${reportType === 'thesis' ? 'Statistical analysis confirms the significance of research findings with p-values < 0.05 for all major hypotheses.' : reportType === 'internship' ? 'Professional evaluation confirms successful completion of all learning objectives with excellent performance ratings.' : 'System testing validates all functional requirements with performance exceeding specified benchmarks.'}\n\n`;
+        content += `${reportType === 'thesis' ? 'Comprehensive validation includes statistical significance testing, comparative analysis with existing approaches, and rigorous peer review ensuring research reliability and contribution to the field.' : reportType === 'internship' ? 'Learning validation includes practical skill assessment, professional competency evaluation, and comprehensive feedback from supervisors and mentors.' : 'Validation encompasses comprehensive testing procedures, performance benchmarking, user acceptance testing, and security assessment ensuring production readiness.'}\n\n`;
     }
-    
-    content += `${chapterNum}.2 Technical Implementation\n\n`;
-    
-    if (projectCategory === 'java-database') {
-        content += `The technical implementation focuses on Java programming best practices and MySQL database optimization. Key aspects include object-oriented design patterns, efficient database connectivity through JDBC, and comprehensive error handling mechanisms.\n\n`;
-        content += `Database design considerations include proper normalization, indexing strategies, and transaction management. The Java implementation emphasizes clean code principles, design patterns, and comprehensive testing procedures.\n\n`;
-    } else if (projectCategory === 'ai-ml') {
-        content += `The technical implementation involves advanced machine learning algorithms and data processing pipelines. Key components include feature engineering, model selection and training, and comprehensive validation procedures.\n\n`;
-        content += `The implementation utilizes industry-standard libraries and frameworks, ensuring scalability and maintainability. Performance optimization and model interpretability are prioritized throughout the development process.\n\n`;
-    } else if (projectCategory === 'web-development') {
-        content += `The technical implementation covers both frontend and backend development using modern web technologies. Key aspects include responsive design, API development, and database integration.\n\n`;
-        content += `The development approach emphasizes user experience, performance optimization, and security best practices. Modern frameworks and tools are utilized to ensure maintainable and scalable code.\n\n`;
-    } else {
-        content += `The technical implementation follows software engineering best practices with emphasis on modularity, maintainability, and performance. Key aspects include system architecture design, efficient algorithms, and comprehensive testing.\n\n`;
-        content += `The development methodology ensures high-quality deliverables through continuous integration, code reviews, and iterative improvement processes.\n\n`;
-    }
-    
-    content += `${chapterNum}.3 Results and Analysis\n\n`;
-    content += `The implementation results demonstrate successful achievement of the objectives outlined for this phase. Comprehensive testing and validation ensure that all requirements are met and the system performs optimally under various conditions.\n\n`;
-    content += `Performance metrics and analysis provide quantitative evidence of the solution's effectiveness. The validation process includes both automated testing and manual verification to ensure comprehensive coverage.\n\n`;
-    
+
     return content;
 }
 
 // Generate conclusion content based on report type and project category
 function generateConclusionContent(config, reportType, projectCategory) {
     let content = `7.1 ${reportType === 'thesis' ? 'Research' : 'Project'} Summary and Achievements\n\n`;
-    
+
     if (reportType === 'thesis') {
         content += `This research has successfully investigated ${config.projectTitle} and provided significant contributions to the academic understanding of ${projectCategory === 'java-database' ? 'Java-database integration patterns' : projectCategory === 'ai-ml' ? 'machine learning applications and optimization' : 'software engineering practices'}.\n\n`;
         content += `The research findings demonstrate empirical evidence supporting the proposed hypotheses and provide a comprehensive framework for future research in this domain. The methodology employed ensures reproducible results and contributes valuable insights to the existing body of knowledge.\n\n`;
@@ -682,15 +861,15 @@ function generateConclusionContent(config, reportType, projectCategory) {
         content += `The ${config.projectTitle} project has successfully achieved all primary objectives and delivered a comprehensive solution that demonstrates effective integration of modern technologies and development methodologies.\n\n`;
         content += `The implementation showcases practical application of ${projectCategory === 'java-database' ? 'Java programming and database management principles' : projectCategory === 'ai-ml' ? 'machine learning algorithms and data science methodologies' : 'software engineering best practices'} while delivering measurable value to users and stakeholders.\n\n`;
     }
-    
+
     content += `7.2 Learning Outcomes and Skills Gained\n\n`;
     content += `This ${reportType} has provided comprehensive learning experiences that significantly enhanced both technical skills and professional development capabilities. The practical application of theoretical knowledge has deepened understanding of ${projectCategory === 'java-database' ? 'enterprise Java development and database systems' : projectCategory === 'ai-ml' ? 'machine learning and artificial intelligence' : 'software development and system design'}.\n\n`;
-    
+
     content += `7.3 Limitations and Future Work\n\n`;
     content += `While this ${reportType} has achieved its primary objectives, certain limitations provide opportunities for future enhancement. These limitations include scope constraints, resource availability, and technological considerations that could be addressed in future work.\n\n`;
-    
+
     content += `Future enhancements could include ${projectCategory === 'java-database' ? 'advanced performance optimization, microservices architecture implementation, and cloud deployment strategies' : projectCategory === 'ai-ml' ? 'advanced algorithm implementation, real-time processing capabilities, and expanded dataset analysis' : 'additional feature implementation, scalability improvements, and integration with emerging technologies'}.\n\n`;
-    
+
     return content;
 }
 
