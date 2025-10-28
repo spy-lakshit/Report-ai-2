@@ -1,9 +1,9 @@
 {
   "version": 2,
   "functions": {
-    "api/**/*.js": {
-      "runtime": "@vercel/node@4.0.0"
+    "api/generate-report.js": {
+      "runtime": "@vercel/node@4.0.0",
+      "maxDuration": 60
     }
-  },
-  "builds": [{ "src": "api/generate-report.js", "use": "@vercel/node" }]
+  }
 }
