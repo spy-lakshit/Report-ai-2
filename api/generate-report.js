@@ -1,127 +1,226 @@
 /**
- * AI Report Generator – Gemini + DOCX
- * Works on Vercel Node 20
+ * AI Dynamic Report Generator
+ * Gemini 1.5 Flash (v1) + DOCX
+ * Works on Vercel (Node 20)
  */
 
 const {
-  Document, Packer, Paragraph, TextRun, AlignmentType,
-  PageBreak, Footer, PageNumber
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  AlignmentType,
+  PageBreak,
+  Footer,
+  PageNumber
 } = require("docx");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// ---------- Gemini wrapper ----------
-async function askGemini(apiKey, prompt) {
+/* -------------------- GEMINI HELPER -------------------- */
+async function generateGeminiText(apiKey, prompt) {
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
-    const res = await model.generateContent(prompt);
-    const txt = res.response?.text();
-    return txt?.trim() || "⚠️ Gemini returned no content.";
+    // ✅ use correct model id for v1 API
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent(prompt);
+    const text = result.response?.text();
+    if (!text || text.trim().length === 0)
+      return "⚠️ Gemini returned empty response.";
+    return text;
   } catch (err) {
-    console.error("Gemini error →", err);
+    console.error("Gemini Error →", err);
     return `⚠️ Gemini API error: ${err.message}`;
   }
 }
 
-// ---------- API handler ----------
+/* -------------------- MAIN HANDLER -------------------- */
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const cfg = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const need = ["apiKey","studentName","projectTitle","projectDescription","reportType"];
-    for (const f of need) if (!cfg[f]) return res.status(400).json({ error: `Missing ${f}` });
+    const config = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const required = ["studentName", "projectTitle", "projectDescription", "reportType", "apiKey"];
+    for (const field of required)
+      if (!config[field] || config[field].trim() === "")
+        return res.status(400).json({ error: `Missing required field: ${field}` });
 
+    console.log(`📘 Generating ${config.reportType} for ${config.studentName}`);
+
+    /* ---------- Define chapters ---------- */
     const chapters = [
-      "INTRODUCTION","LITERATURE REVIEW","METHODOLOGY",
-      "IMPLEMENTATION","TESTING AND RESULTS","CONCLUSION"
+      "INTRODUCTION",
+      "LITERATURE REVIEW AND TECHNOLOGY ANALYSIS",
+      "METHODOLOGY AND SYSTEM DESIGN",
+      "IMPLEMENTATION AND DEVELOPMENT",
+      "TESTING AND VALIDATION",
+      "RESULTS AND ANALYSIS",
+      "CONCLUSION"
     ];
 
-    const gen = {};
-    for (const ch of chapters) {
+    /* ---------- Generate chapters ---------- */
+    const generatedChapters = {};
+    for (const chapter of chapters) {
       const prompt = `
-Write a detailed academic section titled "${ch}"
-for a ${cfg.reportType} on "${cfg.projectTitle}".
-Context: ${cfg.projectDescription}
-Use formal technical English, multiple paragraphs.`;
-      console.log("→ Generating", ch);
-      gen[ch] = await askGemini(cfg.apiKey, prompt);
-      await new Promise(r => setTimeout(r, 500)); // small delay
+Write a complete academic chapter titled "${chapter}" 
+for a ${config.reportType} report on "${config.projectTitle}".
+Include sub-sections, clear structure, and multiple paragraphs.
+Context: ${config.projectDescription}
+Use formal academic writing in English.
+`;
+      console.log("🧠 Generating:", chapter);
+      generatedChapters[chapter] = await generateGeminiText(config.apiKey, prompt);
+      await new Promise(r => setTimeout(r, 500)); // small delay to avoid timeouts
     }
 
-    // ---------- Build DOCX ----------
-    const p = [];
+    /* ---------- DOCX CONTENT ---------- */
+    const paragraphs = [];
 
-    // Cover Page
-    p.push(
+    // COVER PAGE
+    paragraphs.push(
       new Paragraph({
-        children:[new TextRun({text:cfg.institution?.toUpperCase()||"INSTITUTION NAME",bold:true,size:32,font:"Times New Roman"})],
-        alignment:AlignmentType.CENTER,spacing:{after:720}
+        children: [new TextRun({ text: config.institution?.toUpperCase() || "INSTITUTION NAME", bold: true, size: 36, font: "Times New Roman" })],
+        alignment: AlignmentType.CENTER, spacing: { before: 720, after: 240 }
       }),
       new Paragraph({
-        children:[new TextRun({text:cfg.projectTitle.toUpperCase(),bold:true,size:36,font:"Times New Roman"})],
-        alignment:AlignmentType.CENTER,spacing:{after:1440}
+        children: [new TextRun({ text: config.department ? config.department.toUpperCase() : `DEPARTMENT OF ${config.course?.toUpperCase() || "COURSE"}`, bold: true, size: 28, font: "Times New Roman" })],
+        alignment: AlignmentType.CENTER, spacing: { after: 720 }
       }),
       new Paragraph({
-        children:[new TextRun({text:`A ${cfg.reportType.toUpperCase()} REPORT`,bold:true,size:28,font:"Times New Roman"})],
-        alignment:AlignmentType.CENTER
+        children: [new TextRun({ text: config.projectTitle.toUpperCase(), bold: true, size: 36, font: "Times New Roman" })],
+        alignment: AlignmentType.CENTER, spacing: { before: 1440, after: 1440 }
       }),
       new Paragraph({
-        children:[new TextRun({text:`Submitted by: ${cfg.studentName}`,size:24,font:"Times New Roman"})],
-        alignment:AlignmentType.CENTER
+        children: [new TextRun({ text: `A ${config.reportType.toUpperCase()} REPORT`, bold: true, size: 28, font: "Times New Roman" })],
+        alignment: AlignmentType.CENTER
       }),
-      new Paragraph({children:[new PageBreak()]})
+      new Paragraph({
+        children: [new TextRun({ text: "Submitted by", bold: true, size: 26, font: "Times New Roman" })],
+        alignment: AlignmentType.CENTER, spacing: { before: 480, after: 240 }
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: config.studentName, bold: true, size: 28, font: "Times New Roman" })],
+        alignment: AlignmentType.CENTER
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `ID: ${config.studentId || ""}`, size: 24, font: "Times New Roman" })],
+        alignment: AlignmentType.CENTER
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `Under the guidance of ${config.supervisor || "Supervisor Name"}`, size: 24, font: "Times New Roman" })],
+        alignment: AlignmentType.CENTER
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: new Date().getFullYear().toString(), bold: true, size: 26, font: "Times New Roman" })],
+        alignment: AlignmentType.CENTER
+      }),
+      new Paragraph({ children: [new PageBreak()] })
     );
 
-    // Chapters
-    for (const [title,text] of Object.entries(gen)) {
-      p.push(
+    // CERTIFICATE PAGE
+    paragraphs.push(
+      new Paragraph({
+        children: [new TextRun({ text: "CERTIFICATE", bold: true, size: 28, font: "Times New Roman" })],
+        alignment: AlignmentType.CENTER
+      }),
+      new Paragraph({
+        children: [new TextRun({
+          text: `This is to certify that ${config.studentName} (${config.studentId || ""}) has successfully completed the ${config.reportType.toLowerCase()} titled "${config.projectTitle}" under the supervision of ${config.supervisor || "the undersigned faculty member"}.`,
+          size: 24, font: "Times New Roman"
+        })],
+        alignment: AlignmentType.JUSTIFIED, spacing: { before: 480, after: 480 }
+      }),
+      new Paragraph({ children: [new PageBreak()] })
+    );
+
+    // ACKNOWLEDGEMENT
+    paragraphs.push(
+      new Paragraph({ children: [new TextRun({ text: "ACKNOWLEDGEMENT", bold: true, size: 28, font: "Times New Roman" })], alignment: AlignmentType.CENTER }),
+      new Paragraph({
+        children: [new TextRun({
+          text: `I sincerely thank ${config.supervisor || "my guide"} for their valuable guidance and constant support throughout the completion of this ${config.reportType.toLowerCase()}. I am also grateful to my peers and faculty members for their encouragement.`,
+          size: 24, font: "Times New Roman"
+        })],
+        alignment: AlignmentType.JUSTIFIED
+      }),
+      new Paragraph({ children: [new PageBreak()] })
+    );
+
+    // ABSTRACT
+    paragraphs.push(
+      new Paragraph({ children: [new TextRun({ text: "ABSTRACT", bold: true, size: 28, font: "Times New Roman" })], alignment: AlignmentType.CENTER }),
+      new Paragraph({
+        children: [new TextRun({
+          text: `This ${config.reportType.toLowerCase()} report provides a comprehensive overview of the project titled "${config.projectTitle}". ${config.projectDescription}`,
+          size: 24, font: "Times New Roman"
+        })],
+        alignment: AlignmentType.JUSTIFIED
+      }),
+      new Paragraph({ children: [new PageBreak()] })
+    );
+
+    // TABLE OF CONTENTS
+    paragraphs.push(
+      new Paragraph({ children: [new TextRun({ text: "TABLE OF CONTENTS", bold: true, size: 28, font: "Times New Roman" })], alignment: AlignmentType.CENTER }),
+      ...chapters.map((c, i) =>
         new Paragraph({
-          children:[new TextRun({text:title,bold:true,size:28,font:"Times New Roman"})],
-          alignment:AlignmentType.CENTER,spacing:{after:480}
-        }),
-        ...text.split("\n").filter(t=>t.trim()).map(
-          t=>new Paragraph({
-            children:[new TextRun({text:t.trim(),size:24,font:"Times New Roman"})],
-            alignment:AlignmentType.JUSTIFIED,
-            spacing:{before:120,after:120,line:360}
-          })
+          children: [new TextRun({ text: `Chapter ${i + 1}: ${c}`, size: 24, font: "Times New Roman" })],
+          alignment: AlignmentType.LEFT
+        })
+      ),
+      new Paragraph({ children: [new PageBreak()] })
+    );
+
+    // ADD CHAPTERS
+    for (const [title, text] of Object.entries(generatedChapters)) {
+      paragraphs.push(
+        new Paragraph({ children: [new TextRun({ text: title, bold: true, size: 28, font: "Times New Roman" })], alignment: AlignmentType.CENTER, spacing: { before: 480, after: 480 } }),
+        ...text.split("\n").filter(t => t.trim()).map(
+          line =>
+            new Paragraph({
+              children: [new TextRun({ text: line.trim(), size: 24, font: "Times New Roman" })],
+              alignment: AlignmentType.JUSTIFIED,
+              spacing: { before: 120, after: 120, line: 360 }
+            })
         ),
-        new Paragraph({children:[new PageBreak()]})
+        new Paragraph({ children: [new PageBreak()] })
       );
     }
 
-    // References
-    p.push(
+    // REFERENCES
+    paragraphs.push(
+      new Paragraph({ children: [new TextRun({ text: "REFERENCES", bold: true, size: 28, font: "Times New Roman" })], alignment: AlignmentType.CENTER }),
       new Paragraph({
-        children:[new TextRun({text:"REFERENCES",bold:true,size:28,font:"Times New Roman"})],
-        alignment:AlignmentType.CENTER
-      }),
-      new Paragraph({children:[new TextRun({text:"1. Oracle Docs\n2. MySQL Manual\n3. IEEE Software Standards",size:24,font:"Times New Roman"})]})
+        children: [new TextRun({
+          text: "1. Oracle Java Documentation\n2. MySQL Developer Guide\n3. IEEE Standards for Software Engineering",
+          size: 24, font: "Times New Roman"
+        })],
+        alignment: AlignmentType.LEFT
+      })
     );
 
+    // FOOTER
     const footer = new Footer({
-      children:[
-        new Paragraph({
-          children:[new TextRun({children:[PageNumber.CURRENT],font:"Times New Roman",size:24})],
-          alignment:AlignmentType.RIGHT
-        })
-      ]
+      children: [new Paragraph({
+        children: [new TextRun({ children: [PageNumber.CURRENT], size: 24, font: "Times New Roman" })],
+        alignment: AlignmentType.RIGHT
+      })]
     });
 
-    const doc = new Document({sections:[{children:p,footers:{default:footer}}]});
-    const buf = await Packer.toBuffer(doc);
+    // CREATE DOCUMENT
+    const doc = new Document({ sections: [{ children: paragraphs, footers: { default: footer } }] });
+    const buffer = await Packer.toBuffer(doc);
+    const filename = `${config.studentName.replace(/\s+/g, "_")}_${config.reportType}_Report.docx`;
 
-    res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-    res.setHeader("Content-Disposition",`attachment; filename="${cfg.studentName.replace(/\s+/g,"_")}_${cfg.reportType}.docx"`);
-    res.send(buf);
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.send(buffer);
 
-  } catch (e) {
-    console.error("💥 Unhandled error:", e);
-    res.status(500).json({error:e.message,stack:e.stack});
+  } catch (err) {
+    console.error("❌ Error generating report:", err);
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 };
