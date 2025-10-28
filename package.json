@@ -1,32 +1,11 @@
 {
   "name": "ai-report-generator",
   "version": "1.0.0",
-  "description": "AI-powered dynamic report generator using Google Gemini API and docx, hosted on Vercel.",
   "main": "api/generate-report.js",
-  "scripts": {
-    "dev": "vercel dev",
-    "start": "node api/generate-report.js",
-    "build": "echo 'No build step required'"
-  },
+  "type": "commonjs",
+  "engines": { "node": "20.x" },
   "dependencies": {
-    "@google/generative-ai": "^0.8.0",
-    "docx": "^8.0.0"
-  },
-  "devDependencies": {
-    "vercel": "^35.0.0"
-  },
-  "engines": {
-    "node": "20.x"
-  },
-  "keywords": [
-    "ai",
-    "report",
-    "generator",
-    "gemini",
-    "docx",
-    "vercel",
-    "dynamic-report"
-  ],
-  "author": "Your Name",
-  "license": "MIT"
+    "@google/generative-ai": "^0.21.0",
+    "docx": "^8.5.0"
+  }
 }
