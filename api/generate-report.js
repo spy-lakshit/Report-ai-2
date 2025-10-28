@@ -397,95 +397,306 @@ async function createPerfectDocx(config) {
     }
 }
 
-// Function to generate chapter content (EXACTLY like offline version)
+// Function to generate truly dynamic chapter content based on report type and project topic
 function generateChapterContent(chapterNum, chapterTitle, config) {
-    const chapterContents = {
-        1: `1.1 Background and Motivation
+    const title = config.projectTitle.toLowerCase();
+    const description = config.projectDescription.toLowerCase();
+    const type = config.reportType.toLowerCase();
+    
+    // Determine project category
+    let projectCategory = "general";
+    if (title.includes('java') || title.includes('mysql') || title.includes('database') || description.includes('java') || description.includes('database') || description.includes('sql')) {
+        projectCategory = "java-database";
+    } else if (title.includes('ai') || title.includes('machine learning') || title.includes('ml') || description.includes('machine learning') || description.includes('artificial intelligence')) {
+        projectCategory = "ai-ml";
+    } else if (title.includes('web') || title.includes('website') || title.includes('react') || description.includes('web development')) {
+        projectCategory = "web-development";
+    } else if (title.includes('mobile') || title.includes('app') || title.includes('android') || title.includes('ios') || description.includes('mobile')) {
+        projectCategory = "mobile-development";
+    }
 
-The field of ${config.course} has witnessed significant advancements in recent years, particularly in areas related to ${config.projectTitle}. This project addresses the growing need for innovative solutions in modern technology through systematic analysis and implementation of advanced methodologies. The motivation stems from identifying gaps in current systems and the potential for improvement through comprehensive system design and development.
+    // Generate content based on chapter number, report type, and project category
+    return generateDynamicChapterContent(chapterNum, chapterTitle, config, type, projectCategory);
+}
 
-The rapid evolution of technology has created new opportunities and challenges in software development. Organizations increasingly require robust, scalable, and efficient solutions that can adapt to changing requirements and handle complex business processes. This project aims to bridge the gap between theoretical knowledge and practical implementation by developing a solution that incorporates industry best practices and modern development methodologies.
+// Function to generate dynamic content for each chapter
+function generateDynamicChapterContent(chapterNum, chapterTitle, config, reportType, projectCategory) {
+    const contentKey = `${reportType}-${projectCategory}-${chapterNum}`;
+    
+    // Dynamic content templates based on report type and project category
+    const contentTemplates = {
+        // THESIS REPORTS - Academic Research Focus
+        "thesis-java-database-1": `1.1 Research Background and Motivation
 
-1.2 Problem Statement
+The field of database systems and Java programming has experienced significant evolution in recent years, particularly in enterprise-level applications and data management solutions. This research addresses the critical need for understanding the integration patterns between Java applications and relational database systems, specifically focusing on ${config.projectTitle}.
 
-The primary challenge lies in developing efficient and scalable solutions that meet contemporary requirements while maintaining reliability and performance standards. Current approaches often face limitations in terms of scalability, maintainability, user experience, and integration capabilities. These challenges significantly impact the overall effectiveness of existing systems and create opportunities for innovative solutions.
+Current research in database connectivity and Java enterprise applications reveals gaps in performance optimization, transaction management, and scalable architecture design. This study aims to contribute to the academic understanding of these integration patterns while providing empirical evidence for best practices in Java-database system design.
 
-Specific problems identified include inadequate performance under high load conditions, limited scalability options, poor user interface design, lack of comprehensive documentation, and insufficient integration capabilities with modern systems. These issues affect user productivity, system reliability, and overall business efficiency.
+1.2 Research Problem Statement
+
+The primary research question investigates how Java applications can be optimally integrated with MySQL database systems to achieve maximum performance, reliability, and maintainability. Existing literature shows inconsistencies in recommended approaches for JDBC optimization, connection pooling strategies, and transaction management in enterprise environments.
+
+Specific research problems include: inadequate performance benchmarking of different JDBC drivers, limited comparative analysis of ORM frameworks versus native SQL approaches, insufficient documentation of connection pooling impact on system scalability, and lack of comprehensive security analysis for Java-database integration patterns.
+
+1.3 Research Objectives and Hypotheses
+
+The primary objective is to conduct a comprehensive analysis of Java-MySQL integration patterns and their impact on system performance and reliability. Secondary objectives include developing performance benchmarks, analyzing security implications, and proposing optimization strategies for enterprise-level applications.
+
+Research hypotheses: (H1) Optimized JDBC connection pooling significantly improves application performance compared to basic connection management, (H2) Prepared statements provide measurable security and performance benefits over dynamic SQL generation, (H3) Transaction isolation levels directly correlate with system concurrency capabilities.
+
+1.4 Research Scope and Methodology
+
+This research employs a mixed-methods approach combining quantitative performance analysis with qualitative assessment of code maintainability and security. The scope includes comprehensive testing of various Java-MySQL integration approaches, performance benchmarking under different load conditions, and security vulnerability assessment.
+
+The methodology involves controlled experiments using standardized datasets, statistical analysis of performance metrics, and comparative evaluation of different architectural approaches. Limitations include focus on MySQL-specific features and Java 8+ environments.
+
+1.5 Thesis Organization and Contribution
+
+This thesis is structured to provide a comprehensive analysis of Java-MySQL integration from both theoretical and practical perspectives. Each chapter builds upon previous findings to develop a complete framework for optimal database integration in Java applications.
+
+The expected contribution includes empirical performance data, security best practices documentation, and a comprehensive framework for Java-database integration that can be applied in enterprise environments.`,
+
+        "thesis-ai-ml-1": `1.1 Research Background and Motivation
+
+The field of artificial intelligence and machine learning has witnessed unprecedented growth in recent years, particularly in applications related to ${config.projectTitle}. This research addresses the critical need for understanding advanced machine learning algorithms and their practical applications in solving complex real-world problems.
+
+Current research in AI and ML reveals significant opportunities for innovation in algorithm optimization, model interpretability, and scalable deployment strategies. This study aims to contribute to the academic understanding of these areas while providing empirical evidence for the effectiveness of proposed methodologies.
+
+1.2 Research Problem Statement
+
+The primary research question investigates how machine learning algorithms can be optimized and applied to achieve superior performance in ${config.projectTitle.toLowerCase()}. Existing literature shows gaps in comparative analysis of different algorithmic approaches, limited research on model interpretability, and insufficient documentation of deployment strategies for production environments.
+
+Specific research problems include: inadequate benchmarking of algorithm performance across different datasets, limited analysis of feature engineering impact on model accuracy, insufficient research on model bias and fairness, and lack of comprehensive frameworks for model deployment and monitoring.
+
+1.3 Research Objectives and Hypotheses
+
+The primary objective is to conduct a comprehensive analysis of machine learning algorithms and their application to ${config.projectTitle.toLowerCase()}. Secondary objectives include developing performance benchmarks, analyzing model interpretability, and proposing optimization strategies for production deployment.
+
+Research hypotheses: (H1) Advanced feature engineering techniques significantly improve model performance compared to basic preprocessing, (H2) Ensemble methods provide measurable accuracy improvements over individual algorithms, (H3) Model interpretability techniques do not significantly impact prediction accuracy.
+
+1.4 Research Scope and Methodology
+
+This research employs a quantitative approach combining experimental design with statistical analysis of algorithm performance. The scope includes comprehensive evaluation of various machine learning algorithms, performance benchmarking across multiple datasets, and analysis of model interpretability techniques.
+
+The methodology involves controlled experiments using standardized datasets, statistical significance testing, cross-validation techniques, and comparative evaluation of different algorithmic approaches. Limitations include focus on supervised learning techniques and specific domain applications.
+
+1.5 Thesis Organization and Contribution
+
+This thesis is structured to provide a comprehensive analysis of machine learning applications from both theoretical and practical perspectives. Each chapter builds upon previous findings to develop a complete framework for optimal algorithm selection and deployment.
+
+The expected contribution includes empirical performance data, algorithm optimization strategies, and a comprehensive framework for machine learning implementation that can be applied across various domains.`,
+
+        // INTERNSHIP REPORTS - Practical Training Focus
+        "internship-java-database-1": `1.1 Internship Background and Motivation
+
+The internship at ${config.institution} provided an invaluable opportunity to gain hands-on experience in Java programming and database systems development. This experience focused on ${config.projectTitle}, allowing for practical application of academic knowledge in a professional environment.
+
+The motivation for this internship stemmed from the desire to understand real-world software development practices, particularly in Java enterprise applications and database integration. The experience aimed to bridge the gap between theoretical knowledge gained in academic settings and practical skills required in the software industry.
+
+1.2 Learning Objectives and Goals
+
+The primary learning objectives included mastering Java programming best practices, understanding database design and optimization techniques, gaining experience with enterprise development tools and frameworks, and developing professional software development skills.
+
+Specific goals encompassed: learning advanced Java concepts including multithreading and design patterns, mastering SQL query optimization and database performance tuning, understanding version control systems and collaborative development practices, gaining experience with testing frameworks and quality assurance processes.
+
+1.3 Internship Scope and Structure
+
+The internship program was structured to provide comprehensive exposure to Java-database development through hands-on projects, mentorship from experienced developers, and participation in real client projects. The scope included both individual learning activities and collaborative team projects.
+
+The program structure involved initial orientation and training sessions, progressive assignment of development tasks with increasing complexity, regular code reviews and feedback sessions, and final project presentation demonstrating acquired skills and knowledge.
+
+1.4 Professional Development Focus
+
+This internship emphasized professional skill development including communication, teamwork, problem-solving, and project management. The experience provided exposure to industry-standard development practices, client interaction, and project lifecycle management.
+
+Professional development activities included participation in team meetings and planning sessions, collaboration with cross-functional teams, presentation of technical solutions to stakeholders, and documentation of development processes and best practices.
+
+1.5 Report Organization and Learning Outcomes
+
+This report documents the comprehensive learning experience gained during the internship, including technical skills development, professional growth, and practical application of academic knowledge. Each chapter details specific aspects of the learning journey and acquired competencies.
+
+The expected outcomes include demonstrated proficiency in Java-database development, understanding of professional software development practices, and preparation for career advancement in software engineering roles.`,
+
+        "internship-web-development-1": `1.1 Internship Background and Motivation
+
+The web development internship at ${config.institution} provided an exceptional opportunity to gain practical experience in modern web technologies and development practices. This experience focused on ${config.projectTitle}, allowing for hands-on application of contemporary web development frameworks and methodologies.
+
+The motivation for pursuing this internship was to understand the rapidly evolving landscape of web development, particularly in areas of frontend frameworks, backend services, and full-stack development practices. The experience aimed to provide industry-relevant skills and professional development opportunities.
+
+1.2 Learning Objectives and Goals
+
+The primary learning objectives included mastering modern web development frameworks, understanding responsive design principles, gaining experience with backend development and API design, and developing professional web development workflows.
+
+Specific goals encompassed: learning React.js and modern JavaScript frameworks, mastering CSS frameworks and responsive design techniques, understanding Node.js and backend development practices, gaining experience with database integration and API development, learning version control and deployment strategies.
+
+1.3 Internship Scope and Structure
+
+The internship program was designed to provide comprehensive exposure to full-stack web development through progressive skill building, mentorship from senior developers, and participation in real client projects. The scope included both frontend and backend development experiences.
+
+The program structure involved initial training in web technologies and development tools, progressive assignment of development tasks from simple components to complex applications, regular code reviews and technical discussions, and final project demonstration showcasing acquired skills.
+
+1.4 Professional Development Focus
+
+This internship emphasized professional skills including client communication, project management, collaborative development, and industry best practices. The experience provided exposure to agile development methodologies, client requirements gathering, and project delivery processes.
+
+Professional development activities included participation in client meetings and requirement discussions, collaboration with design and development teams, presentation of technical solutions and project progress, and documentation of development processes and lessons learned.
+
+1.5 Report Organization and Learning Outcomes
+
+This report documents the comprehensive learning experience gained during the web development internship, including technical skill acquisition, professional growth, and practical application of modern web development practices. Each chapter details specific learning milestones and competency development.
+
+The expected outcomes include demonstrated proficiency in full-stack web development, understanding of professional development practices, and preparation for career advancement in web development and software engineering roles.`,
+
+        // PROJECT REPORTS - Implementation Focus
+        "project-java-database-1": `1.1 Project Background and Motivation
+
+The ${config.projectTitle} project addresses the critical need for efficient data management solutions in modern software applications. This project focuses on leveraging Java programming capabilities combined with MySQL database systems to create a robust, scalable, and maintainable application architecture.
+
+The motivation for this project stems from the increasing demand for enterprise-level applications that can handle complex data operations while maintaining high performance and reliability. The project aims to demonstrate best practices in Java-database integration while solving real-world data management challenges.
+
+1.2 Problem Statement and Analysis
+
+The primary challenge addressed by this project is the development of an efficient system that can handle complex data operations while maintaining optimal performance and user experience. Current solutions often suffer from scalability issues, poor database design, and inadequate user interface design.
+
+Specific problems identified include: inefficient database query patterns leading to poor performance, lack of proper data validation and security measures, inadequate user interface design affecting user productivity, limited scalability options for growing data volumes, and insufficient error handling and logging mechanisms.
 
 1.3 Project Objectives and Goals
 
-The main objectives include designing a comprehensive system architecture, implementing robust functionality with modern technologies, ensuring optimal performance and scalability, providing intuitive user interfaces that enhance user experience, and delivering comprehensive documentation and support materials.
+The main objectives include designing and implementing a comprehensive Java application with MySQL database integration, developing efficient data access patterns and query optimization strategies, creating an intuitive user interface that enhances user experience, and implementing robust security and validation mechanisms.
 
-Primary goals encompass developing efficient algorithms and data structures, creating responsive and accessible user interfaces, implementing comprehensive security measures, ensuring cross-platform compatibility, providing detailed testing and validation, and establishing maintenance and support procedures.
+Primary goals encompass: developing a scalable application architecture using Java best practices, implementing optimized database schema and query patterns, creating responsive user interfaces with modern design principles, ensuring comprehensive data validation and security measures, providing detailed documentation and user guides.
 
-1.4 Scope and Limitations
+1.4 Project Scope and Deliverables
 
-This project covers the complete development lifecycle from requirements analysis to implementation, testing, and deployment preparation. The scope includes system architecture design, database design and implementation, user interface development, comprehensive testing strategies, performance optimization, and detailed documentation.
+This project covers the complete software development lifecycle including requirements analysis, system design, implementation, testing, and deployment preparation. The scope includes database design and optimization, Java application development, user interface creation, and comprehensive testing strategies.
 
-Limitations include time constraints that may affect the implementation of certain advanced features, resource availability for extensive testing environments, and technical constraints related to specific platform requirements. These limitations are carefully considered and addressed through appropriate planning and risk management strategies.
+Key deliverables include: fully functional Java application with MySQL integration, optimized database schema with proper indexing and relationships, user-friendly interface with comprehensive functionality, complete source code with detailed documentation, testing suite with unit and integration tests, deployment guide and user manual.
 
-1.5 Report Organization and Structure
+1.5 Development Methodology and Approach
 
-This report is structured to provide a comprehensive overview of the project development process, from initial planning and analysis to final implementation and testing. Each chapter builds upon previous sections to create a complete picture of the development methodology, implementation details, and validation results.
+The project follows an iterative development approach combining elements of agile methodology with traditional software engineering practices. The development process emphasizes continuous testing, regular code reviews, and incremental feature implementation.
 
-The organization follows academic standards and industry best practices for technical documentation, ensuring clarity, completeness, and professional presentation of all project aspects and achievements.`,
+The methodology includes: comprehensive requirements analysis and system design, iterative development with regular milestone reviews, continuous integration and testing practices, regular code reviews and quality assurance, comprehensive documentation throughout the development process, and user feedback integration for interface improvements.`,
 
-        7: `7.1 Project Summary and Achievements
+        "project-ai-ml-1": `1.1 Project Background and Motivation
 
-The ${config.projectTitle} project has successfully achieved all primary objectives and delivered a comprehensive solution that demonstrates effective integration of modern technologies and development methodologies. This project represents a significant achievement that combines theoretical knowledge with practical implementation experience.
+The ${config.projectTitle} project addresses the growing need for intelligent systems that can analyze complex data patterns and provide actionable insights. This project focuses on implementing advanced machine learning algorithms to solve real-world problems through data-driven approaches.
 
-The primary achievement is the successful implementation of a robust, scalable solution that effectively addresses identified requirements and provides significant value to users and stakeholders. The implementation demonstrates mastery of current technologies and best practices while delivering measurable improvements over existing approaches.
+The motivation for this project stems from the increasing availability of data and the need for automated analysis systems that can extract meaningful patterns and predictions. The project aims to demonstrate practical applications of machine learning while addressing specific domain challenges.
 
-7.2 Learning Outcomes and Skills Gained
+1.2 Problem Statement and Analysis
 
-This project has provided invaluable learning experiences that significantly enhanced both technical skills and professional development capabilities. The comprehensive nature of the project enabled deep exploration of software development concepts, system design principles, and project management methodologies.
+The primary challenge addressed by this project is the development of an intelligent system that can process complex datasets and provide accurate predictions or classifications. Current solutions often suffer from poor accuracy, limited scalability, and inadequate model interpretability.
 
-Key learning outcomes include advanced programming skills, system architecture design capabilities, database management expertise, user interface development proficiency, testing and quality assurance methodologies, and project management experience. These skills provide a strong foundation for future professional development and career advancement.
+Specific problems identified include: insufficient accuracy in existing prediction models, lack of proper feature engineering and data preprocessing, inadequate model validation and testing procedures, limited scalability for large datasets, and poor model interpretability affecting user trust and adoption.
 
-7.3 Limitations and Challenges
+1.3 Project Objectives and Goals
 
-Despite successful completion of all primary objectives, this project encountered several limitations and challenges that provided valuable learning opportunities and insights into real-world software development complexities. Understanding these limitations provides important context for project outcomes and future improvement opportunities.
+The main objectives include designing and implementing a comprehensive machine learning solution, developing effective data preprocessing and feature engineering pipelines, creating accurate and interpretable prediction models, and implementing robust model validation and testing procedures.
 
-Technical limitations include focus on specific technology platforms rather than broader technology ecosystems, time constraints that limited implementation of certain advanced features, and resource constraints that affected the scope of testing and validation activities. These limitations were managed through careful planning and prioritization.
+Primary goals encompass: developing scalable machine learning pipelines using industry best practices, implementing advanced feature engineering and data preprocessing techniques, creating accurate models with comprehensive performance evaluation, ensuring model interpretability and explainability, providing detailed analysis and visualization of results.
 
-7.4 Future Work and Recommendations
+1.4 Project Scope and Deliverables
 
-The successful completion of this project provides a solid foundation for numerous enhancement opportunities and future development directions. These recommendations address both technical improvements and strategic directions that could significantly enhance system capabilities and value proposition.
+This project covers the complete machine learning development lifecycle including data collection and preprocessing, feature engineering, model development and training, validation and testing, and deployment preparation. The scope includes comprehensive data analysis, algorithm implementation, and performance evaluation.
 
-Future enhancements could include advanced feature implementation, integration with additional systems and platforms, performance optimization for larger scale deployments, and expansion of functionality to address additional use cases and requirements. The modular architecture design supports these enhancements while maintaining system stability and reliability.`
+Key deliverables include: complete machine learning pipeline with data preprocessing and feature engineering, trained and validated models with performance metrics, comprehensive analysis and visualization of results, complete source code with detailed documentation, model evaluation reports with statistical analysis, deployment guide and user documentation.
+
+1.5 Development Methodology and Approach
+
+The project follows a data science methodology combining elements of CRISP-DM with agile development practices. The development process emphasizes iterative model improvement, comprehensive validation, and continuous performance monitoring.
+
+The methodology includes: comprehensive data exploration and analysis, iterative feature engineering and model development, rigorous model validation and testing procedures, continuous performance monitoring and improvement, comprehensive documentation of methodology and results, and stakeholder feedback integration for model refinement.`
     };
 
-    // Get base content for the chapter
-    let content = chapterContents[chapterNum] || chapterContents[7]; // Default to conclusion if chapter not found
-
-    // Add generic content for chapters 2-6
-    if (chapterNum >= 2 && chapterNum <= 6) {
-        content = `${chapterNum}.1 Overview and Introduction
-
-This chapter provides comprehensive coverage of ${chapterTitle.toLowerCase()} as it relates to ${config.projectTitle}. The content demonstrates thorough understanding of the subject matter and its practical application in the context of this project.
-
-The methodology involves systematic analysis, design, implementation, and evaluation of the proposed solution. The work demonstrates practical application of modern technologies and methodologies in addressing real-world challenges specific to ${config.projectTitle}.
-
-${chapterNum}.2 Technical Implementation and Analysis
-
-Key technical aspects include the development of robust algorithms, implementation of efficient data structures, and creation of user-friendly interfaces. The implementation follows industry best practices and incorporates modern development methodologies to ensure quality and maintainability.
-
-The technical analysis covers performance optimization, security considerations, scalability planning, and integration capabilities. These aspects are crucial for the successful deployment and operation of the system in real-world environments.
-
-${chapterNum}.3 Results and Validation
-
-The results demonstrate successful achievement of the objectives outlined for this phase of the project. Comprehensive testing and validation ensure that all requirements are met and the system performs as expected under various conditions.
-
-Performance metrics, user feedback, and system analytics provide quantitative evidence of the solution's effectiveness. The validation process includes both automated testing and manual verification to ensure comprehensive coverage of all system aspects.
-
-${chapterNum}.4 Discussion and Analysis
-
-The discussion analyzes the implications of the results and their significance in the context of the overall project objectives. Key findings are presented with supporting evidence and detailed analysis of their impact on the project outcomes.
-
-The analysis includes comparison with existing solutions, identification of innovative aspects, and assessment of the contribution to the field. This comprehensive evaluation provides valuable insights for future development and research activities.`;
+    // Get content for the specific combination, or generate generic content
+    let content = contentTemplates[contentKey];
+    
+    if (!content) {
+        // Generate generic content for chapters 2-6 or missing combinations
+        if (chapterNum === 7) {
+            content = generateConclusionContent(config, reportType, projectCategory);
+        } else if (chapterNum >= 2 && chapterNum <= 6) {
+            content = generateGenericChapterContent(chapterNum, chapterTitle, config, reportType, projectCategory);
+        } else {
+            // Fallback for chapter 1
+            content = generateGenericIntroductionContent(config, reportType, projectCategory);
+        }
     }
-
+    
     return content;
+}
+
+// Generate generic content for chapters 2-6 based on report type and project category
+function generateGenericChapterContent(chapterNum, chapterTitle, config, reportType, projectCategory) {
+    const sectionTitles = chapterTitle.split(' AND ');
+    const mainTitle = sectionTitles[0] || chapterTitle;
+    
+    let content = `${chapterNum}.1 ${mainTitle} Overview\n\n`;
+    
+    if (reportType === 'thesis') {
+        content += `This chapter presents a comprehensive analysis of ${chapterTitle.toLowerCase()} in the context of ${config.projectTitle}. The research methodology employed follows rigorous academic standards with emphasis on empirical validation and theoretical contribution.\n\n`;
+        content += `The theoretical framework underlying this research draws from established principles in ${projectCategory === 'java-database' ? 'database systems and software engineering' : projectCategory === 'ai-ml' ? 'machine learning and artificial intelligence' : 'software development and system design'}. The methodology ensures reproducible results and contributes to the existing body of knowledge.\n\n`;
+    } else if (reportType === 'internship') {
+        content += `This chapter documents the practical experience gained in ${chapterTitle.toLowerCase()} during the internship at ${config.institution}. The learning process involved hands-on application of theoretical knowledge under professional supervision.\n\n`;
+        content += `The practical training focused on industry-standard practices in ${projectCategory === 'java-database' ? 'Java enterprise development and database management' : projectCategory === 'web-development' ? 'modern web development and full-stack technologies' : 'software development and system implementation'}. The experience provided valuable insights into professional development practices.\n\n`;
+    } else {
+        content += `This chapter details the ${chapterTitle.toLowerCase()} phase of the ${config.projectTitle} project. The implementation follows industry best practices and demonstrates practical application of software engineering principles.\n\n`;
+        content += `The development approach emphasizes ${projectCategory === 'java-database' ? 'robust database design and efficient Java implementation' : projectCategory === 'ai-ml' ? 'rigorous model development and validation procedures' : 'scalable architecture and maintainable code design'}. The methodology ensures high-quality deliverables and optimal system performance.\n\n`;
+    }
+    
+    content += `${chapterNum}.2 Technical Implementation\n\n`;
+    
+    if (projectCategory === 'java-database') {
+        content += `The technical implementation focuses on Java programming best practices and MySQL database optimization. Key aspects include object-oriented design patterns, efficient database connectivity through JDBC, and comprehensive error handling mechanisms.\n\n`;
+        content += `Database design considerations include proper normalization, indexing strategies, and transaction management. The Java implementation emphasizes clean code principles, design patterns, and comprehensive testing procedures.\n\n`;
+    } else if (projectCategory === 'ai-ml') {
+        content += `The technical implementation involves advanced machine learning algorithms and data processing pipelines. Key components include feature engineering, model selection and training, and comprehensive validation procedures.\n\n`;
+        content += `The implementation utilizes industry-standard libraries and frameworks, ensuring scalability and maintainability. Performance optimization and model interpretability are prioritized throughout the development process.\n\n`;
+    } else if (projectCategory === 'web-development') {
+        content += `The technical implementation covers both frontend and backend development using modern web technologies. Key aspects include responsive design, API development, and database integration.\n\n`;
+        content += `The development approach emphasizes user experience, performance optimization, and security best practices. Modern frameworks and tools are utilized to ensure maintainable and scalable code.\n\n`;
+    } else {
+        content += `The technical implementation follows software engineering best practices with emphasis on modularity, maintainability, and performance. Key aspects include system architecture design, efficient algorithms, and comprehensive testing.\n\n`;
+        content += `The development methodology ensures high-quality deliverables through continuous integration, code reviews, and iterative improvement processes.\n\n`;
+    }
+    
+    content += `${chapterNum}.3 Results and Analysis\n\n`;
+    content += `The implementation results demonstrate successful achievement of the objectives outlined for this phase. Comprehensive testing and validation ensure that all requirements are met and the system performs optimally under various conditions.\n\n`;
+    content += `Performance metrics and analysis provide quantitative evidence of the solution's effectiveness. The validation process includes both automated testing and manual verification to ensure comprehensive coverage.\n\n`;
+    
+    return content;
+}
+
+// Generate conclusion content based on report type and project category
+function generateConclusionContent(config, reportType, projectCategory) {
+    let content = `7.1 ${reportType === 'thesis' ? 'Research' : 'Project'} Summary and Achievements\n\n`;
+    
+    if (reportType === 'thesis') {
+        content += `This research has successfully investigated ${config.projectTitle} and provided significant contributions to the academic understanding of ${projectCategory === 'java-database' ? 'Java-database integration patterns' : projectCategory === 'ai-ml' ? 'machine learning applications and optimization' : 'software engineering practices'}.\n\n`;
+        content += `The research findings demonstrate empirical evidence supporting the proposed hypotheses and provide a comprehensive framework for future research in this domain. The methodology employed ensures reproducible results and contributes valuable insights to the existing body of knowledge.\n\n`;
+    } else if (reportType === 'internship') {
+        content += `The internship experience at ${config.institution} has provided invaluable practical knowledge and professional development opportunities. The hands-on experience with ${config.projectTitle} has significantly enhanced both technical skills and professional competencies.\n\n`;
+        content += `The learning outcomes demonstrate successful achievement of all internship objectives and provide a strong foundation for career advancement in ${projectCategory === 'java-database' ? 'Java enterprise development' : projectCategory === 'web-development' ? 'web development and full-stack engineering' : 'software development'}.\n\n`;
+    } else {
+        content += `The ${config.projectTitle} project has successfully achieved all primary objectives and delivered a comprehensive solution that demonstrates effective integration of modern technologies and development methodologies.\n\n`;
+        content += `The implementation showcases practical application of ${projectCategory === 'java-database' ? 'Java programming and database management principles' : projectCategory === 'ai-ml' ? 'machine learning algorithms and data science methodologies' : 'software engineering best practices'} while delivering measurable value to users and stakeholders.\n\n`;
+    }
+    
+    content += `7.2 Learning Outcomes and Skills Gained\n\n`;
+    content += `This ${reportType} has provided comprehensive learning experiences that significantly enhanced both technical skills and professional development capabilities. The practical application of theoretical knowledge has deepened understanding of ${projectCategory === 'java-database' ? 'enterprise Java development and database systems' : projectCategory === 'ai-ml' ? 'machine learning and artificial intelligence' : 'software development and system design'}.\n\n`;
+    
+    content += `7.3 Limitations and Future Work\n\n`;
+    content += `While this ${reportType} has achieved its primary objectives, certain limitations provide opportunities for future enhancement. These limitations include scope constraints, resource availability, and technological considerations that could be addressed in future work.\n\n`;
+    
+    content += `Future enhancements could include ${projectCategory === 'java-database' ? 'advanced performance optimization, microservices architecture implementation, and cloud deployment strategies' : projectCategory === 'ai-ml' ? 'advanced algorithm implementation, real-time processing capabilities, and expanded dataset analysis' : 'additional feature implementation, scalability improvements, and integration with emerging technologies'}.\n\n`;
+    
+    return content;
+}
+
+// Generate generic introduction content
+function generateGenericIntroductionContent(config, reportType, projectCategory) {
+    return `1.1 Background and Motivation\n\nThe field of ${config.course} has witnessed significant advancements in recent years, particularly in areas related to ${config.projectTitle}. This ${reportType} addresses the growing need for innovative solutions in modern technology through systematic analysis and implementation of advanced methodologies.\n\n1.2 Objectives and Goals\n\nThe main objectives include comprehensive analysis and implementation of ${config.projectTitle}, demonstrating practical application of theoretical knowledge, and contributing to the understanding of ${projectCategory === 'java-database' ? 'Java-database integration' : projectCategory === 'ai-ml' ? 'machine learning applications' : 'software development practices'}.\n\n1.3 Scope and Organization\n\nThis ${reportType} covers comprehensive analysis and implementation of ${config.projectTitle}, following academic standards and industry best practices for technical documentation.`;
 }
 
 // Function to create perfectly formatted paragraphs (EXACTLY like offline version)
