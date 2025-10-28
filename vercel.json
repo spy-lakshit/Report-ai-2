@@ -1,13 +1,7 @@
 {
   "functions": {
-    "api/generate-report.js": {
+    "api/*.js": {
       "maxDuration": 300
     }
-  },
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/public/index.html"
-    }
-  ]
+  }
 }
