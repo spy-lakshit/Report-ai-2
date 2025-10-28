@@ -1,7 +1,6 @@
 {
   "name": "ai-report-generator",
   "version": "1.0.0",
-  "main": "api/generate-report.js",
   "type": "commonjs",
   "engines": { "node": "20.x" },
   "dependencies": {
