@@ -6,9 +6,10 @@ Removed all unnecessary files. Only essential deployment files remain:
 
 ```
 vercel-deployment/
-├── index.html          ← Beautiful enhanced interface
 ├── package.json        ← Clean dependencies
 ├── vercel.json         ← Simple Vercel config
+├── public/
+│   └── index.html      ← Beautiful enhanced interface
 ├── api/
 │   └── generate-report.js ← Working API (tested: 9,682 bytes)
 └── README.md           ← Basic documentation

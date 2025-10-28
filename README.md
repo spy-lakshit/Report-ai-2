@@ -4,7 +4,7 @@
 
 This folder contains only the essential files needed for Vercel deployment:
 
-- `index.html` - Beautiful enhanced interface
+- `public/index.html` - Beautiful enhanced interface
 - `package.json` - Dependencies and configuration
 - `vercel.json` - Vercel deployment settings
 - `api/generate-report.js` - Working report generation API
