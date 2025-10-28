@@ -1,5 +1,6 @@
-// ✅ AI-Powered Dynamic Report Generator (Gemini + DOCX)
-// Works with Vercel Node 20.x
+// 🌐 Universal AI-Powered Dynamic Report Generator (Gemini 1.5 Flash + DOCX)
+// Author: MG Invisible x ChatGPT
+// Works on Vercel (Node 20.x runtime)
 
 const {
   Document,
@@ -19,7 +20,7 @@ const {
 } = require("docx");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// ===== HTTP ENTRY POINT =====
+// Main API function (Vercel handler)
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -31,7 +32,6 @@ module.exports = async (req, res) => {
 
   try {
     const config = req.body;
-
     const required = [
       "apiKey",
       "studentName",
@@ -44,15 +44,15 @@ module.exports = async (req, res) => {
       "projectDescription",
       "reportType",
     ];
-    for (const field of required) {
-      if (!config[field] || config[field].trim() === "") {
-        return res.status(400).json({ error: `Missing field: ${field}` });
-      }
+
+    for (const f of required) {
+      if (!config[f] || config[f].trim() === "")
+        return res.status(400).json({ error: `Missing field: ${f}` });
     }
 
-    console.log(`🚀 Generating report for ${config.projectTitle}...`);
+    console.log(`🚀 Generating report for ${config.projectTitle}`);
 
-    const reportBuffer = await generateDynamicReport(config);
+    const buffer = await generateDynamicReport(config);
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `${config.studentName.replace(
       /\s+/g,
@@ -64,48 +64,53 @@ module.exports = async (req, res) => {
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     );
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    res.send(reportBuffer);
+    res.send(buffer);
   } catch (err) {
-    console.error("❌ Server error:", err);
-    res.status(500).json({ error: "Server error", details: err.message });
+    console.error("❌ Report generation error:", err);
+    res
+      .status(500)
+      .json({ error: "Report generation failed", details: err.message });
   }
 };
 
-// ===== MAIN WORKFLOW =====
-async function generateDynamicReport(config) {
-  const analysis = analyzeProject(config);
-  const chapters = getChapters(config, analysis);
-  const chapterContents = [];
+// =============================
+// 🔹 Generate Dynamic Report
+// =============================
+async function generateDynamicReport(cfg) {
+  const analysis = analyzeTopic(cfg);
+  const chapters = getChapters(cfg, analysis);
+  const content = [];
 
-  for (const [i, ch] of chapters.entries()) {
-    console.log(`📖 Generating Chapter ${i + 1}: ${ch.title}`);
-    const text = await generateChapterText(config, ch, i + 1);
-    chapterContents.push({ ...ch, text });
-    await delay(500);
-  }
+  for (let i = 0; i < chapters.length; i++) {
+    const ch = chapters[i];
+    console.log(`📘 Generating Chapter ${i + 1}: ${ch.title}`);
 
-  return await createDocument(config, analysis, chapterContents);
-}
-
-// ===== AI TEXT GENERATION =====
-async function generateChapterText(config, chapter, num) {
-  try {
-    const prompt = `
-You are writing part of a ${config.reportType} report titled "${config.projectTitle}".
-Topic Description: ${config.projectDescription}
-
-Write detailed, academic, and professional content for Chapter ${num}: ${chapter.title}
-Include sub-sections: ${chapter.sections.join(", ")}.
-Keep it formal and structured, about 350-400 words total.
+    try {
+      const prompt = `
+Write a ${cfg.reportType} report chapter titled "${ch.title}" for the project "${cfg.projectTitle}".
+Topic Description: ${cfg.projectDescription}
+Include sections: ${ch.sections.join(", ")}.
+Make it professional, structured, academic and detailed (~400 words).
 `;
-    const text = await callGemini(config.apiKey, prompt);
-    return text;
-  } catch (e) {
-    console.error("⚠️ Gemini chapter error:", e);
-    return `⚠️ Unable to generate section due to API issue.`;
+      const text = await callGemini(cfg.apiKey, prompt);
+      content.push({ ...ch, text });
+    } catch (e) {
+      console.error(`⚠️ Chapter ${i + 1} AI Error:`, e);
+      content.push({
+        ...ch,
+        text: "⚠️ Unable to generate section due to API issue.",
+      });
+    }
+
+    await delay(400);
   }
+
+  return await createDoc(cfg, analysis, content);
 }
 
+// =============================
+// 🔹 Gemini API Caller
+// =============================
 async function callGemini(apiKey, prompt) {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -113,19 +118,25 @@ async function callGemini(apiKey, prompt) {
   return result.response.text();
 }
 
-// ===== PROJECT ANALYSIS =====
-function analyzeProject(cfg) {
+// =============================
+// 🔹 Topic Analyzer
+// =============================
+function analyzeTopic(cfg) {
   const title = cfg.projectTitle.toLowerCase();
   if (title.includes("java") || title.includes("mysql"))
-    return { category: "Java-Database", tech: ["Java", "MySQL"] };
+    return { category: "Software (Java + MySQL)", focus: "technical" };
   if (title.includes("ai") || title.includes("machine"))
-    return { category: "AI-ML", tech: ["Python", "TensorFlow"] };
+    return { category: "Artificial Intelligence", focus: "research" };
   if (title.includes("web"))
-    return { category: "Web Development", tech: ["React", "Node.js"] };
-  return { category: "Software Project", tech: ["General Technologies"] };
+    return { category: "Web Development", focus: "technical" };
+  if (title.includes("business"))
+    return { category: "Business Study", focus: "analytical" };
+  return { category: "General Research", focus: "academic" };
 }
 
-// ===== CHAPTER STRUCTURE =====
+// =============================
+// 🔹 Chapter Generator
+// =============================
 function getChapters(cfg, analysis) {
   return [
     {
@@ -134,25 +145,27 @@ function getChapters(cfg, analysis) {
     },
     {
       title: "LITERATURE REVIEW",
-      sections: ["Previous Works", "Technology Overview", "Comparative Analysis"],
+      sections: ["Previous Work", "Technology Overview", "Comparative Study"],
     },
     {
       title: "METHODOLOGY",
-      sections: ["System Design", "Architecture", "Implementation Approach"],
+      sections: ["Approach", "Tools Used", "Implementation Strategy"],
     },
     {
       title: "RESULTS AND DISCUSSION",
-      sections: ["Performance", "Findings", "Evaluation"],
+      sections: ["Results", "Evaluation", "Findings"],
     },
     {
-      title: "CONCLUSION",
-      sections: ["Summary", "Limitations", "Future Work"],
+      title: "CONCLUSION AND FUTURE WORK",
+      sections: ["Summary", "Conclusion", "Future Scope"],
     },
   ];
 }
 
-// ===== DOCUMENT CREATION =====
-async function createDocument(cfg, analysis, chapters) {
+// =============================
+// 🔹 DOCX Creator
+// =============================
+async function createDoc(cfg, analysis, chapters) {
   const doc = new Document({
     sections: [
       // COVER PAGE
@@ -160,30 +173,32 @@ async function createDocument(cfg, analysis, chapters) {
         children: [
           new Paragraph({
             text: cfg.institution.toUpperCase(),
-            heading: "Title",
             alignment: AlignmentType.CENTER,
+            spacing: { after: 400 },
+            children: [new TextRun({ bold: true, size: 36 })],
           }),
           new Paragraph({
-            text: `Department of ${cfg.course}`,
+            text: `DEPARTMENT OF ${cfg.course.toUpperCase()}`,
             alignment: AlignmentType.CENTER,
+            spacing: { after: 600 },
           }),
-          new Paragraph({ text: "", spacing: { after: 400 } }),
           new Paragraph({
             text: cfg.projectTitle.toUpperCase(),
-            bold: true,
             alignment: AlignmentType.CENTER,
+            spacing: { after: 400 },
+            children: [new TextRun({ bold: true, size: 32 })],
           }),
           new Paragraph({
             text: `A ${cfg.reportType.toUpperCase()} REPORT`,
             alignment: AlignmentType.CENTER,
+            spacing: { after: 400 },
           }),
-          new Paragraph({ text: "", spacing: { after: 400 } }),
           new Paragraph({
             text: `Submitted by ${cfg.studentName} (${cfg.studentId})`,
             alignment: AlignmentType.CENTER,
           }),
           new Paragraph({
-            text: `Under the Guidance of ${cfg.supervisor}`,
+            text: `Under the guidance of ${cfg.supervisor}`,
             alignment: AlignmentType.CENTER,
           }),
           new Paragraph({
@@ -193,19 +208,19 @@ async function createDocument(cfg, analysis, chapters) {
         ],
       },
 
-      // CERTIFICATE PAGE
+      // CERTIFICATE
       {
         children: [
           new Paragraph({
             text: "CERTIFICATE",
-            heading: "Title",
             alignment: AlignmentType.CENTER,
+            children: [new TextRun({ bold: true, size: 32 })],
           }),
           new Paragraph({
-            text: `This is to certify that ${cfg.studentName} has completed the work titled "${cfg.projectTitle}" under my supervision at ${cfg.institution}.`,
+            text: `This is to certify that ${cfg.studentName} has successfully completed the work titled "${cfg.projectTitle}" under my supervision at ${cfg.institution}.`,
             alignment: AlignmentType.JUSTIFIED,
+            spacing: { before: 400 },
           }),
-          new Paragraph({ text: "", spacing: { after: 400 } }),
           new Paragraph({
             text: `Supervisor: ${cfg.supervisor}`,
             alignment: AlignmentType.RIGHT,
@@ -218,11 +233,11 @@ async function createDocument(cfg, analysis, chapters) {
         children: [
           new Paragraph({
             text: "ACKNOWLEDGEMENT",
-            heading: "Title",
             alignment: AlignmentType.CENTER,
+            children: [new TextRun({ bold: true, size: 32 })],
           }),
           new Paragraph({
-            text: `I would like to express my gratitude to ${cfg.supervisor} for guidance and support. I also thank ${cfg.institution} for resources and encouragement.`,
+            text: `I would like to express my sincere gratitude to ${cfg.supervisor} for their valuable guidance and ${cfg.institution} for providing the required facilities.`,
             alignment: AlignmentType.JUSTIFIED,
           }),
           new Paragraph({
@@ -237,16 +252,12 @@ async function createDocument(cfg, analysis, chapters) {
         children: [
           new Paragraph({
             text: "ABSTRACT",
-            heading: "Title",
             alignment: AlignmentType.CENTER,
+            children: [new TextRun({ bold: true, size: 32 })],
           }),
           new Paragraph({
-            text: `${cfg.projectDescription}`,
+            text: cfg.projectDescription,
             alignment: AlignmentType.JUSTIFIED,
-          }),
-          new Paragraph({
-            text: `Keywords: ${analysis.tech.join(", ")}`,
-            bold: true,
           }),
         ],
       },
@@ -256,39 +267,41 @@ async function createDocument(cfg, analysis, chapters) {
         children: [
           new Paragraph({
             text: "TABLE OF CONTENTS",
-            heading: "Title",
             alignment: AlignmentType.CENTER,
+            children: [new TextRun({ bold: true, size: 32 })],
           }),
-          new Table({
-            width: { size: 100, type: WidthType.PERCENTAGE },
-            rows: chapters.map(
-              (ch, i) =>
-                new TableRow({
-                  children: [
-                    new TableCell({
-                      children: [new Paragraph(`Chapter ${i + 1}: ${ch.title}`)],
-                    }),
-                    new TableCell({
-                      children: [new Paragraph({ text: "..." })],
-                      width: { size: 15, type: WidthType.PERCENTAGE },
-                    }),
-                  ],
-                })
-            ),
-          }),
+          ...chapters.map(
+            (ch, i) =>
+              new Paragraph({
+                text: `Chapter ${i + 1}: ${ch.title}`,
+                alignment: AlignmentType.LEFT,
+                spacing: { after: 120 },
+              })
+          ),
         ],
       },
 
-      // MAIN CONTENT
+      // MAIN CHAPTERS
       {
         children: chapters.flatMap((ch, i) => [
-          new Paragraph({ text: "", children: [new PageBreak()] }),
+          new Paragraph({ children: [new PageBreak()] }),
           new Paragraph({
             text: `CHAPTER ${i + 1}: ${ch.title}`,
-            heading: "Heading1",
             alignment: AlignmentType.CENTER,
+            children: [new TextRun({ bold: true, size: 28 })],
+            spacing: { after: 240 },
           }),
-          ...splitIntoParagraphs(ch.text || ""),
+          ...ch.text
+            .split(/\n+/)
+            .filter((p) => p.trim())
+            .map(
+              (p) =>
+                new Paragraph({
+                  text: p,
+                  alignment: AlignmentType.JUSTIFIED,
+                  spacing: { after: 120 },
+                })
+            ),
         ]),
       },
 
@@ -296,47 +309,33 @@ async function createDocument(cfg, analysis, chapters) {
       {
         children: [
           new Paragraph({
+            children: [new PageBreak()],
+          }),
+          new Paragraph({
             text: "REFERENCES",
-            heading: "Title",
             alignment: AlignmentType.CENTER,
+            children: [new TextRun({ bold: true, size: 32 })],
           }),
           new Paragraph({
-            text: "1. IEEE Standards Association (2023). Software Engineering Standards.",
+            text: "1. IEEE Standards Association. Software Engineering Standards (2023).",
           }),
           new Paragraph({
-            text: "2. Fowler, M. (2019). Refactoring: Improving the Design of Existing Code.",
+            text: "2. Fowler, M. Refactoring: Improving the Design of Existing Code (2018).",
+          }),
+          new Paragraph({
+            text: "3. Oracle Java Docs, MySQL Documentation, Google AI Papers (2024).",
           }),
         ],
       },
     ],
-    styles: {
-      default: {
-        document: {
-          run: { font: "Times New Roman", size: 24 },
-          paragraph: { spacing: { line: 360 } },
-        },
-      },
-    },
   });
 
   return await Packer.toBuffer(doc);
 }
 
-// ===== HELPERS =====
-function splitIntoParagraphs(text) {
-  return text
-    .split(/\n+/)
-    .filter((p) => p.trim())
-    .map(
-      (p) =>
-        new Paragraph({
-          text: p.trim(),
-          alignment: AlignmentType.JUSTIFIED,
-          spacing: { after: 120 },
-        })
-    );
-}
-
+// =============================
+// 🔹 Utility
+// =============================
 function delay(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
