@@ -1,10 +1,27 @@
 {
   "name": "ai-report-generator",
   "version": "1.0.0",
-  "type": "commonjs",
-  "engines": { "node": "20.x" },
+  "description": "Universal AI-Powered Report Generator for ANY Topic",
+  "main": "api/generate-report.js",
+  "scripts": {
+    "start": "node api/generate-report.js",
+    "test": "node test-universal-api.js",
+    "dev": "vercel dev"
+  },
   "dependencies": {
-    "@google/generative-ai": "^0.22.0",
     "docx": "^8.5.0"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "ai",
+    "report",
+    "generator",
+    "docx",
+    "universal",
+    "academic"
+  ],
+  "author": "AI Report Generator Team",
+  "license": "MIT"
 }
