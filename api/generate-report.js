@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
     try {
         const config = req.body;
         const required = ['studentName', 'studentId', 'course', 'semester', 'institution', 'supervisor', 'projectTitle', 'projectDescription', 'reportType'];
-        
+
         for (const field of required) {
             if (!config[field] || config[field].trim() === '') {
                 return res.status(400).json({ error: `Missing required field: ${field}` });
@@ -20,20 +20,20 @@ module.exports = async (req, res) => {
         }
 
         console.log(`🤖 Starting AI-powered report generation for: ${config.projectTitle}`);
-        
+
         // Generate truly dynamic report
         const reportBuffer = await generateDynamicReport(config);
-        
+
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const filename = `${config.studentName.replace(/\s+/g, '_')}_${config.reportType}_Report_${timestamp}.docx`;
-        
+
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.setHeader('Content-Length', reportBuffer.length);
-        
+
         console.log(`✅ Dynamic report generated: ${reportBuffer.length} bytes`);
         res.send(reportBuffer);
-        
+
     } catch (error) {
         console.error('❌ Report generation error:', error);
         res.status(500).json({ error: 'Failed to generate report', details: error.message });
@@ -44,30 +44,30 @@ module.exports = async (req, res) => {
 async function generateDynamicReport(config) {
     console.log('🔍 Analyzing project requirements...');
     await delay(300);
-    
+
     // Analyze the project to determine content strategy
     const analysis = analyzeProjectDetails(config);
     console.log(`📊 Project analysis: ${analysis.category} | ${analysis.complexity} | ${analysis.focus}`);
-    
+
     // Generate dynamic chapter structure
     const chapters = generateChapterStructure(analysis, config);
     console.log(`📚 Generated ${chapters.length} chapters for ${config.reportType}`);
-    
+
     // Generate content for each chapter dynamically
     const generatedChapters = [];
     for (let i = 0; i < chapters.length; i++) {
         console.log(`🔄 Generating Chapter ${i + 1}: ${chapters[i].title}`);
         await delay(400 + Math.random() * 600); // Simulate AI processing time
-        
+
         const chapterContent = await generateChapterContent(i + 1, chapters[i], config, analysis);
         generatedChapters.push(chapterContent);
-        
+
         console.log(`✅ Chapter ${i + 1} completed: ${chapterContent.wordCount} words`);
     }
-    
+
     console.log('📝 Assembling professional document...');
     await delay(200);
-    
+
     return await createDocument(config, generatedChapters, analysis);
 }
 
@@ -76,12 +76,12 @@ function analyzeProjectDetails(config) {
     const title = config.projectTitle.toLowerCase();
     const desc = config.projectDescription.toLowerCase();
     const type = config.reportType.toLowerCase();
-    
+
     let category = 'general';
     let technologies = ['Software Development'];
     let complexity = 'intermediate';
     let focus = 'implementation';
-    
+
     // Determine project category and technologies
     if (title.includes('java') || desc.includes('java') || title.includes('mysql') || desc.includes('database')) {
         category = 'java-database';
@@ -97,7 +97,7 @@ function analyzeProjectDetails(config) {
         category = 'mobile-development';
         technologies = ['Mobile Development', 'Android', 'iOS'];
     }
-    
+
     // Determine focus based on report type
     if (type.includes('thesis')) {
         focus = 'research';
@@ -105,14 +105,14 @@ function analyzeProjectDetails(config) {
     } else if (type.includes('internship')) {
         focus = 'learning';
     }
-    
+
     return { category, technologies, complexity, focus, reportType: type };
 }
 
 // Generate chapter structure based on analysis
 function generateChapterStructure(analysis, config) {
     const chapters = [];
-    
+
     if (analysis.focus === 'learning') {
         // Internship chapters
         chapters.push(
@@ -159,7 +159,7 @@ function generateChapterStructure(analysis, config) {
             );
         }
     }
-    
+
     return chapters;
 }
 
@@ -167,17 +167,17 @@ function generateChapterStructure(analysis, config) {
 async function generateChapterContent(chapterNum, chapterInfo, config, analysis) {
     let content = '';
     let wordCount = 0;
-    
+
     // Generate content for each section
     for (let i = 0; i < chapterInfo.sections.length; i++) {
         const section = chapterInfo.sections[i];
         await delay(100 + Math.random() * 200); // Simulate processing time
-        
+
         const sectionContent = generateSectionContent(chapterNum, i + 1, section, config, analysis);
         content += `${chapterNum}.${i + 1} ${section}\\n\\n${sectionContent}\\n\\n`;
         wordCount += sectionContent.split(' ').length;
     }
-    
+
     return {
         number: chapterNum,
         title: chapterInfo.title,
@@ -192,7 +192,7 @@ function generateSectionContent(chapterNum, sectionNum, sectionTitle, config, an
     const reportType = config.reportType;
     const technologies = analysis.technologies.join(', ');
     const category = analysis.category;
-    
+
     // Generate contextual content based on section and project details
     if (chapterNum === 1) {
         // Introduction chapter
@@ -225,7 +225,7 @@ function generateSectionContent(chapterNum, sectionNum, sectionTitle, config, an
             return `The ${sectionTitle.toLowerCase()} component of the ${projectTitle} project represents a critical element in the overall system architecture and implementation strategy for ${category.replace('-', ' ')} development.\\n\\nThis section details the comprehensive approach taken to address the specific requirements and challenges associated with ${sectionTitle.toLowerCase()}, utilizing ${technologies} technologies and following industry best practices for optimal results.\\n\\nKey considerations include technical feasibility and implementation complexity, integration requirements with existing system components, performance and scalability implications for long-term system operation, and comprehensive maintenance and enhancement procedures supporting sustainable system evolution.`;
         }
     }
-    
+
     // Fallback content
     return `This section provides comprehensive coverage of ${sectionTitle.toLowerCase()} as it relates to the ${projectTitle} project, demonstrating thorough understanding and practical application of ${technologies} technologies in ${category.replace('-', ' ')} development.`;
 }
@@ -233,15 +233,15 @@ function generateSectionContent(chapterNum, sectionNum, sectionTitle, config, an
 // Create the complete document with professional formatting
 async function createDocument(config, chapters, analysis) {
     const mainContent = [];
-    
+
     // Add chapters with proper formatting
     for (let i = 0; i < chapters.length; i++) {
         const chapter = chapters[i];
-        
+
         if (i > 0) {
             mainContent.push(new Paragraph({ children: [new PageBreak()] }));
         }
-        
+
         // Chapter title
         mainContent.push(
             new Paragraph({
@@ -255,12 +255,12 @@ async function createDocument(config, chapters, analysis) {
                 spacing: { before: 480, after: 360 }
             })
         );
-        
+
         // Chapter content
         const paragraphs = createFormattedParagraphs(chapter.content);
         mainContent.push(...paragraphs);
     }
-    
+
     // Add references section
     mainContent.push(new Paragraph({ children: [new PageBreak()] }));
     mainContent.push(
@@ -275,11 +275,11 @@ async function createDocument(config, chapters, analysis) {
             spacing: { before: 480, after: 360 }
         })
     );
-    
+
     const references = generateReferences(analysis);
     const refParagraphs = createFormattedParagraphs(references.join('\\n'));
     mainContent.push(...refParagraphs);
-    
+
     // Create the complete document
     const doc = new Document({
         sections: [
@@ -295,7 +295,7 @@ async function createDocument(config, chapters, analysis) {
                     }
                 }
             },
-            
+
             // Front matter section
             {
                 headers: {
@@ -329,7 +329,7 @@ async function createDocument(config, chapters, analysis) {
                     }
                 }
             },
-            
+
             // Main content section
             {
                 headers: {
@@ -367,7 +367,7 @@ async function createDocument(config, chapters, analysis) {
             }
         }
     });
-    
+
     return await Packer.toBuffer(doc);
 }
 
@@ -375,11 +375,11 @@ async function createDocument(config, chapters, analysis) {
 function createFormattedParagraphs(text) {
     const paragraphs = [];
     const lines = text.split('\\n').filter(line => line.trim());
-    
+
     for (const line of lines) {
         const trimmedLine = line.trim();
         if (!trimmedLine) continue;
-        
+
         // Section headings (e.g., "1.1 Background")
         if (trimmedLine.match(/^\\d+\\.\\d+/)) {
             paragraphs.push(
@@ -412,7 +412,7 @@ function createFormattedParagraphs(text) {
             );
         }
     }
-    
+
     return paragraphs;
 }
 
@@ -753,7 +753,7 @@ function generateReferences(analysis) {
         "1. IEEE Standards Association. (2023). Software Engineering Standards and Guidelines.",
         "2. Association for Computing Machinery. (2023). Computing Classification System."
     ];
-    
+
     if (analysis.category === 'java-database') {
         return [
             ...baseRefs,
