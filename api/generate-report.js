@@ -8,21 +8,21 @@ module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    
+
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
-    
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
-    
+
     try {
         const config = req.body;
-        
+
         // Validate required fields
         const required = ['studentName', 'studentId', 'course', 'semester', 'institution', 'supervisor', 'projectTitle', 'projectDescription', 'reportType'];
-        
+
         for (const field of required) {
             if (!config[field] || config[field].trim() === '') {
                 return res.status(400).json({
@@ -30,93 +30,171 @@ module.exports = async (req, res) => {
                 });
             }
         }
-        
+
         console.log(`🎯 Generating enhanced report for: ${config.projectTitle}`);
-        
+
         // Generate the report using EXACT offline logic
         const reportBuffer = await createPerfectDocx(config);
-        
+
         // Create filename like offline version
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const filename = `${config.studentName.replace(/\s+/g, '_')}_${config.studentId}_${config.projectTitle.replace(/[^a-zA-Z0-9]/g, '_')}_Report_${timestamp}.docx`;
-        
+
         // Set headers for file download
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.setHeader('Content-Length', reportBuffer.length);
-        
+
         // Send the file
         res.send(reportBuffer);
-        
+
     } catch (error) {
         console.error('❌ Report generation error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Failed to generate report',
-            details: error.message 
+            details: error.message
         });
     }
 };
 
-// COMPLETE FUNCTIONS FROM PERFECT OFFLINE VERSION - EXACTLY THE SAME
-
-// Function to generate dynamic chapter titles based on project topic (EXACTLY like offline version)
-function generateDynamicChapterTitles(projectTitle, projectDescription) {
+// Function to generate dynamic chapter titles based on BOTH report type AND project topic
+function generateDynamicChapterTitles(projectTitle, projectDescription, reportType) {
     const title = projectTitle.toLowerCase();
     const description = projectDescription.toLowerCase();
+    const type = reportType.toLowerCase();
 
     let mainTopic = "Software Development";
     let chapters = [];
 
-    // Java/Database projects
-    if (title.includes('java') || title.includes('mysql') || title.includes('database') || description.includes('java') || description.includes('database') || description.includes('sql')) {
-        mainTopic = "Java Programming and Database Systems";
-        chapters = [
-            "INTRODUCTION TO JAVA PROGRAMMING AND DATABASE SYSTEMS",
-            "LITERATURE REVIEW AND TECHNOLOGY ANALYSIS",
-            "METHODOLOGY AND SYSTEM DESIGN",
-            "SYSTEM ANALYSIS AND DESIGN",
-            "IMPLEMENTATION",
-            "TESTING AND VALIDATION",
-            "CONCLUSION"
-        ];
+    // THESIS REPORT - Academic research focus
+    if (type === 'thesis') {
+        if (title.includes('java') || title.includes('mysql') || title.includes('database') || description.includes('java') || description.includes('database') || description.includes('sql')) {
+            mainTopic = "Java Programming and Database Systems Research";
+            chapters = [
+                "INTRODUCTION",
+                "LITERATURE REVIEW AND THEORETICAL FOUNDATIONS",
+                "RESEARCH METHODOLOGY AND DESIGN",
+                "DATA COLLECTION AND ANALYSIS FRAMEWORK",
+                "EXPERIMENTAL DESIGN AND IMPLEMENTATION",
+                "RESULTS AND FINDINGS ANALYSIS",
+                "CONCLUSION"
+            ];
+        } else if (title.includes('ai') || title.includes('machine learning') || title.includes('ml') || description.includes('machine learning') || description.includes('artificial intelligence')) {
+            mainTopic = "Artificial Intelligence and Machine Learning Research";
+            chapters = [
+                "INTRODUCTION",
+                "LITERATURE REVIEW AND THEORETICAL BACKGROUND",
+                "RESEARCH METHODOLOGY AND APPROACH",
+                "ALGORITHM DESIGN AND THEORETICAL ANALYSIS",
+                "EXPERIMENTAL SETUP AND DATA COLLECTION",
+                "RESULTS ANALYSIS AND EVALUATION",
+                "CONCLUSION"
+            ];
+        } else {
+            chapters = [
+                "INTRODUCTION",
+                "LITERATURE REVIEW AND THEORETICAL FOUNDATIONS",
+                "RESEARCH METHODOLOGY AND DESIGN",
+                "DATA COLLECTION AND ANALYSIS",
+                "EXPERIMENTAL RESULTS AND FINDINGS",
+                "DISCUSSION AND IMPLICATIONS",
+                "CONCLUSION"
+            ];
+        }
     }
-    // AI/Machine Learning projects
-    else if (title.includes('ai') || title.includes('artificial intelligence') || title.includes('machine learning') || title.includes('ml') || description.includes('machine learning') || description.includes('artificial intelligence')) {
-        mainTopic = "Artificial Intelligence and Machine Learning";
-        chapters = [
-            "INTRODUCTION TO ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING",
-            "LITERATURE REVIEW AND THEORETICAL FOUNDATIONS",
-            "MACHINE LEARNING ALGORITHMS AND METHODOLOGIES",
-            "SYSTEM DESIGN AND ARCHITECTURE",
-            "IMPLEMENTATION AND MODEL DEVELOPMENT",
-            "TESTING, VALIDATION AND PERFORMANCE ANALYSIS",
-            "CONCLUSION"
-        ];
+    // INTERNSHIP REPORT - Practical training focus
+    else if (type === 'internship') {
+        if (title.includes('java') || title.includes('mysql') || title.includes('database') || description.includes('java') || description.includes('database') || description.includes('sql')) {
+            mainTopic = "Java Programming and Database Systems Internship";
+            chapters = [
+                "INTRODUCTION",
+                "COMPANY OVERVIEW AND TECHNOLOGY STACK",
+                "TRAINING METHODOLOGY AND SKILL DEVELOPMENT",
+                "PRACTICAL IMPLEMENTATION AND HANDS-ON EXPERIENCE",
+                "PROJECT WORK AND REAL-WORLD APPLICATIONS",
+                "LEARNING OUTCOMES AND PROFESSIONAL DEVELOPMENT",
+                "CONCLUSION"
+            ];
+        } else if (title.includes('web') || title.includes('website') || title.includes('react') || description.includes('web development')) {
+            mainTopic = "Web Development Internship";
+            chapters = [
+                "INTRODUCTION",
+                "ORGANIZATION PROFILE AND WEB TECHNOLOGIES",
+                "TRAINING PROGRAM AND SKILL ACQUISITION",
+                "FRONTEND AND BACKEND DEVELOPMENT EXPERIENCE",
+                "PROJECT CONTRIBUTIONS AND PRACTICAL WORK",
+                "PROFESSIONAL SKILLS AND INDUSTRY EXPOSURE",
+                "CONCLUSION"
+            ];
+        } else {
+            chapters = [
+                "INTRODUCTION",
+                "ORGANIZATION OVERVIEW AND WORK ENVIRONMENT",
+                "TRAINING PROGRAM AND LEARNING METHODOLOGY",
+                "PRACTICAL WORK AND SKILL APPLICATION",
+                "PROJECT CONTRIBUTIONS AND ACHIEVEMENTS",
+                "PROFESSIONAL DEVELOPMENT AND LEARNING OUTCOMES",
+                "CONCLUSION"
+            ];
+        }
     }
-    // Web Development projects
-    else if (title.includes('web') || title.includes('website') || title.includes('react') || title.includes('frontend') || title.includes('backend') || description.includes('web development') || description.includes('website')) {
-        mainTopic = "Web Development";
-        chapters = [
-            "INTRODUCTION TO MODERN WEB DEVELOPMENT",
-            "WEB TECHNOLOGIES AND FRAMEWORKS REVIEW",
-            "SYSTEM ARCHITECTURE AND DESIGN METHODOLOGY",
-            "FRONTEND AND BACKEND IMPLEMENTATION",
-            "DATABASE INTEGRATION AND API DEVELOPMENT",
-            "TESTING, DEPLOYMENT AND PERFORMANCE OPTIMIZATION",
-            "CONCLUSION"
-        ];
-    }
-    // Default for other projects
+    // PROJECT REPORT - Implementation and development focus
     else {
-        chapters = [
-            "INTRODUCTION",
-            "LITERATURE REVIEW AND BACKGROUND STUDY",
-            "METHODOLOGY AND SYSTEM DESIGN",
-            "IMPLEMENTATION AND DEVELOPMENT",
-            "TESTING AND VALIDATION",
-            "RESULTS AND PERFORMANCE ANALYSIS",
-            "CONCLUSION"
-        ];
+        if (title.includes('java') || title.includes('mysql') || title.includes('database') || description.includes('java') || description.includes('database') || description.includes('sql')) {
+            mainTopic = "Java Programming and Database Systems Project";
+            chapters = [
+                "INTRODUCTION",
+                "SYSTEM ANALYSIS AND REQUIREMENTS GATHERING",
+                "SYSTEM DESIGN AND ARCHITECTURE",
+                "DATABASE DESIGN AND IMPLEMENTATION",
+                "APPLICATION DEVELOPMENT AND CODING",
+                "TESTING AND VALIDATION",
+                "CONCLUSION"
+            ];
+        } else if (title.includes('ai') || title.includes('machine learning') || title.includes('ml') || description.includes('machine learning') || description.includes('artificial intelligence')) {
+            mainTopic = "Artificial Intelligence and Machine Learning Project";
+            chapters = [
+                "INTRODUCTION",
+                "PROBLEM ANALYSIS AND REQUIREMENTS STUDY",
+                "ALGORITHM SELECTION AND MODEL DESIGN",
+                "DATA PREPROCESSING AND FEATURE ENGINEERING",
+                "MODEL IMPLEMENTATION AND TRAINING",
+                "PERFORMANCE EVALUATION AND OPTIMIZATION",
+                "CONCLUSION"
+            ];
+        } else if (title.includes('web') || title.includes('website') || title.includes('react') || description.includes('web development')) {
+            mainTopic = "Web Development Project";
+            chapters = [
+                "INTRODUCTION",
+                "REQUIREMENTS ANALYSIS AND SYSTEM STUDY",
+                "SYSTEM DESIGN AND ARCHITECTURE PLANNING",
+                "FRONTEND DEVELOPMENT AND USER INTERFACE",
+                "BACKEND DEVELOPMENT AND DATABASE INTEGRATION",
+                "TESTING AND DEPLOYMENT",
+                "CONCLUSION"
+            ];
+        } else if (title.includes('mobile') || title.includes('app') || title.includes('android') || title.includes('ios') || description.includes('mobile')) {
+            mainTopic = "Mobile Application Development Project";
+            chapters = [
+                "INTRODUCTION",
+                "MOBILE PLATFORM ANALYSIS AND REQUIREMENTS",
+                "APPLICATION DESIGN AND USER EXPERIENCE",
+                "MOBILE APP DEVELOPMENT AND IMPLEMENTATION",
+                "TESTING AND CROSS-PLATFORM COMPATIBILITY",
+                "DEPLOYMENT AND PERFORMANCE OPTIMIZATION",
+                "CONCLUSION"
+            ];
+        } else {
+            chapters = [
+                "INTRODUCTION",
+                "SYSTEM ANALYSIS AND REQUIREMENTS GATHERING",
+                "SYSTEM DESIGN AND METHODOLOGY",
+                "IMPLEMENTATION AND DEVELOPMENT",
+                "TESTING AND VALIDATION",
+                "RESULTS AND PERFORMANCE ANALYSIS",
+                "CONCLUSION"
+            ];
+        }
     }
 
     return { mainTopic, chapters };
@@ -127,7 +205,7 @@ async function createPerfectDocx(config) {
     try {
         console.log('📝 Creating professional DOCX with comprehensive structure...');
 
-        const { chapters } = generateDynamicChapterTitles(config.projectTitle, config.projectDescription);
+        const { chapters } = generateDynamicChapterTitles(config.projectTitle, config.projectDescription, config.reportType);
         const mainBodyContent = [];
 
         // Process each chapter (now 7 chapters including Conclusion)
@@ -318,8 +396,6 @@ async function createPerfectDocx(config) {
         throw new Error(`Failed to create DOCX: ${error.message}`);
     }
 }
-// He
-lper functions from perfect offline version
 
 // Function to generate chapter content (EXACTLY like offline version)
 function generateChapterContent(chapterNum, chapterTitle, config) {
@@ -381,7 +457,7 @@ Future enhancements could include advanced feature implementation, integration w
 
     // Get base content for the chapter
     let content = chapterContents[chapterNum] || chapterContents[7]; // Default to conclusion if chapter not found
-    
+
     // Add generic content for chapters 2-6
     if (chapterNum >= 2 && chapterNum <= 6) {
         content = `${chapterNum}.1 Overview and Introduction
@@ -410,8 +486,9 @@ The analysis includes comparison with existing solutions, identification of inno
     }
 
     return content;
-}// 
-Function to create perfectly formatted paragraphs (EXACTLY like offline version)
+}
+
+// Function to create perfectly formatted paragraphs (EXACTLY like offline version)
 function createFormattedParagraphs(text) {
     const paragraphs = [];
     const lines = text.split('\n').filter(line => line.trim());
@@ -650,6 +727,738 @@ function createCoverPage(details) {
             ],
             alignment: AlignmentType.CENTER,
             spacing: { before: 720 }
+        })
+    ];
+}
+
+// Function to create Training Certificate page
+function createCertificatePage(details) {
+    return [
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "TRAINING CERTIFICATE",
+                    bold: true,
+                    size: 28, // 14pt bold
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 480, after: 480 }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: `This is to certify that ${details.studentName} (Student ID: ${details.studentId}) has successfully completed the ${details.reportType.toLowerCase()} work on "${details.projectTitle}" as part of the curriculum for ${details.course} at ${details.institution}.`,
+                    bold: false,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { before: 360, after: 360, line: 360, lineRule: "auto" }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: `The work was carried out under the supervision of ${details.supervisor} during the academic year ${new Date().getFullYear()}.`,
+                    bold: false,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { before: 360, after: 720, line: 360, lineRule: "auto" }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Date: _______________",
+                    bold: false,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { before: 720, after: 360 }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Signature of Supervisor",
+                    bold: false,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.RIGHT,
+            spacing: { before: 720 }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: details.supervisor,
+                    bold: true,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.RIGHT,
+            spacing: { after: 240 }
+        })
+    ];
+}
+
+// Function to create Acknowledgement page
+function createAcknowledgementPage(details) {
+    return [
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "ACKNOWLEDGEMENT",
+                    bold: true,
+                    size: 28, // 14pt bold
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 480, after: 480 }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: `I would like to express my sincere gratitude to my supervisor, ${details.supervisor}, for her valuable guidance, continuous support, and encouragement throughout the development of this ${details.reportType.toLowerCase()}. Her expertise and insights have been instrumental in shaping this work.`,
+                    bold: false,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { before: 360, after: 360, line: 360, lineRule: "auto" }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: `I am also thankful to the faculty members of ${details.department || `Department of ${details.course}`}, ${details.institution}, for their support and for providing the necessary resources and facilities required for this work.`,
+                    bold: false,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { before: 360, after: 360, line: 360, lineRule: "auto" }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "I would also like to thank my family and friends for their constant encouragement and moral support throughout this journey.",
+                    bold: false,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { before: 360, after: 720, line: 360, lineRule: "auto" }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: details.studentName,
+                    bold: true,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.RIGHT,
+            spacing: { before: 720 }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: details.studentId,
+                    bold: false,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.RIGHT,
+            spacing: { after: 240 }
+        })
+    ];
+}
+
+// Function to create Abstract page
+function createAbstractPage(details) {
+    return [
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "ABSTRACT",
+                    bold: true,
+                    size: 28, // 14pt bold
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 480, after: 480 }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: `This ${details.reportType.toLowerCase()} presents the comprehensive study and implementation of "${details.projectTitle}". ${details.projectDescription}`,
+                    bold: false,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { before: 360, after: 360, line: 360, lineRule: "auto" }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "The methodology involves systematic analysis of Java programming concepts, MySQL database design, JDBC connectivity implementation, and comprehensive testing of CRUD operations. The work demonstrates practical application of object-oriented programming principles and database management techniques.",
+                    bold: false,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { before: 360, after: 360, line: 360, lineRule: "auto" }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Key contributions include the development of a robust Java application with MySQL integration, implementation of efficient database operations, creation of user-friendly interfaces, and comprehensive documentation of development processes and best practices.",
+                    bold: false,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { before: 360, after: 360, line: 360, lineRule: "auto" }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "The results demonstrate successful integration of Java applications with MySQL databases, effective implementation of CRUD operations, and development of scalable, maintainable code following industry best practices. The project provides a solid foundation for understanding enterprise-level Java development.",
+                    bold: false,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { before: 360, after: 720, line: 360, lineRule: "auto" }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: `Keywords: Java Programming, MySQL Database, JDBC Connectivity, CRUD Operations, ${details.course}, Database Management, Software Development`,
+                    bold: true,
+                    size: 24, // 12pt
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { before: 360 }
+        })
+    ];
+}
+
+// Function to create Table of Contents page
+function createTableOfContentsPage(config) {
+    const contents = [
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "TABLE OF CONTENTS",
+                    bold: true,
+                    size: 28, // 14pt bold
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 480, after: 480 }
+        })
+    ];
+
+    // Set up the custom tab stop for the page number aligned to the right margin
+    const tabStops = [{
+        type: TabStopType.RIGHT,
+        position: 9000, // Right align at 6.25 inches
+        leader: LeaderType.DOT // Dots fill the space
+    }];
+
+    // TOC structure matching the exact format provided
+    const tocItems = [
+        { text: "Training Certificate", page: "i", bold: false, indent: 0 },
+        { text: "Acknowledgement", page: "ii", bold: false, indent: 0 },
+        { text: "Abstract", page: "iii", bold: false, indent: 0 },
+        { text: "Table of contents", page: "iv-v", bold: false, indent: 0 },
+        { text: "List of tables", page: "vi", bold: false, indent: 0 },
+        { text: "List of figures", page: "vii", bold: false, indent: 0 },
+
+        // Main chapters with proper page ranges for 50+ pages
+        { text: "Chapter 1: Introduction", page: "1-9", bold: false, indent: 0 },
+        { text: "1.1 Background and Motivation", page: "1", bold: false, indent: 360 },
+        { text: "1.2 Problem Statement", page: "3", bold: false, indent: 360 },
+        { text: "1.3 Objectives", page: "6", bold: false, indent: 360 },
+        { text: "1.4 Scope and Limitations", page: "8", bold: false, indent: 360 },
+
+        { text: "Chapter 2: Literature Review", page: "10-17", bold: false, indent: 0 },
+        { text: "2.1 Theoretical Background", page: "10", bold: false, indent: 360 },
+        { text: "2.2 Technology Review", page: "12", bold: false, indent: 360 },
+        { text: "2.3 Related Work and Existing Solutions", page: "14", bold: false, indent: 360 },
+        { text: "2.4 Research Gap and Justification", page: "16", bold: false, indent: 360 },
+
+        { text: "Chapter 3: Methodology", page: "18-24", bold: false, indent: 0 },
+        { text: "3.1 Development Approach", page: "18", bold: false, indent: 360 },
+        { text: "3.2 System Requirements", page: "19", bold: false, indent: 360 },
+        { text: "3.3 System Design and Architecture", page: "21", bold: false, indent: 360 },
+        { text: "3.4 Technology Stack and Tools", page: "23", bold: false, indent: 360 },
+
+        { text: "Chapter 4: System Analysis and Design", page: "25-32", bold: false, indent: 0 },
+        { text: "4.1 Requirements Analysis", page: "25", bold: false, indent: 360 },
+        { text: "4.2 System Architecture", page: "26", bold: false, indent: 360 },
+        { text: "4.3 Database Design", page: "29", bold: false, indent: 360 },
+        { text: "4.4 User Interface Design", page: "31", bold: false, indent: 360 },
+
+        { text: "Chapter 5: Implementation", page: "33-39", bold: false, indent: 0 },
+        { text: "5.1 Development Environment Setup", page: "33", bold: false, indent: 360 },
+        { text: "5.2 Database Implementation", page: "35", bold: false, indent: 360 },
+        { text: "5.3 Core System Development", page: "37", bold: false, indent: 360 },
+        { text: "5.4 User Interface Development", page: "38", bold: false, indent: 360 },
+
+        { text: "Chapter 6: Testing and Validation", page: "40-47", bold: false, indent: 0 },
+        { text: "6.1 Testing Strategy", page: "40", bold: false, indent: 360 },
+        { text: "6.2 Unit and Integration Testing", page: "42", bold: false, indent: 360 },
+        { text: "6.3 System and Performance Testing", page: "46", bold: false, indent: 360 },
+
+        { text: "Chapter 7: Conclusion", page: "48-50", bold: false, indent: 0 },
+        { text: "7.1 Project Summary and Achievements", page: "48", bold: false, indent: 360 },
+        { text: "7.2 Learning Outcomes and Skills Gained", page: "48", bold: false, indent: 360 },
+        { text: "7.3 Limitations and Challenges", page: "49", bold: false, indent: 360 },
+        { text: "7.4 Future Work and Recommendations", page: "49", bold: false, indent: 360 },
+
+        { text: "References", page: "51", bold: false, indent: 0 }
+    ];
+
+    for (const item of tocItems) {
+        contents.push(
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: item.text,
+                        bold: item.bold,
+                        size: 24, // 12pt
+                        font: "Times New Roman"
+                    }),
+                    new TextRun({
+                        text: '\t', // Tab character to trigger the tab stop
+                        size: 24,
+                        font: "Times New Roman"
+                    }),
+                    new TextRun({
+                        text: item.page,
+                        bold: item.bold,
+                        size: 24,
+                        font: "Times New Roman"
+                    })
+                ],
+                alignment: AlignmentType.LEFT,
+                spacing: {
+                    before: 0,
+                    after: 120, // 6pt after
+                    line: 360,  // 1.5 line spacing
+                    lineRule: "auto"
+                },
+                indent: { left: item.indent },
+                tabStops: tabStops
+            })
+        );
+    }
+
+    return contents;
+}
+
+// Function to create footer with page numbering
+function createFooter() {
+    return new Footer({
+        children: [
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        children: [PageNumber.CURRENT],
+                        size: 24, // 12pt
+                        font: "Times New Roman"
+                    }),
+                ],
+                alignment: AlignmentType.RIGHT, // Page number on the bottom right
+                spacing: { before: 0 }
+            }),
+        ],
+    });
+}
+
+// Function to create List of Tables page
+function createListOfTablesPage() {
+    const tabStops = [{
+        type: TabStopType.RIGHT,
+        position: 9000,
+        leader: LeaderType.DOT
+    }];
+
+    return [
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "LIST OF TABLES",
+                    bold: true,
+                    size: 28, // 14pt bold
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 480, after: 480 }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Table 3.1: System Requirements Specification",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: '\t',
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: "20",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { before: 240, after: 120 },
+            tabStops: tabStops
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Table 4.1: Database Schema Design",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: '\t',
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: "27",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { after: 120 },
+            tabStops: tabStops
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Table 4.2: JDBC Connection Parameters",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: '\t',
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: "30",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { after: 120 },
+            tabStops: tabStops
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Table 5.1: Implementation Timeline",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: '\t',
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: "34",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { after: 120 },
+            tabStops: tabStops
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Table 6.1: Test Case Results",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: '\t',
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: "42",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { after: 120 },
+            tabStops: tabStops
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Table 6.2: Performance Metrics",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: '\t',
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: "45",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { after: 120 },
+            tabStops: tabStops
+        })
+    ];
+}
+
+// Function to create List of Figures page
+function createListOfFiguresPage() {
+    const tabStops = [{
+        type: TabStopType.RIGHT,
+        position: 9000,
+        leader: LeaderType.DOT
+    }];
+
+    return [
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "LIST OF FIGURES",
+                    bold: true,
+                    size: 28, // 14pt bold
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 480, after: 480 }
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Figure 3.1: System Architecture Diagram",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: '\t',
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: "22",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { before: 240, after: 120 },
+            tabStops: tabStops
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Figure 4.1: Database Entity Relationship Diagram",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: '\t',
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: "28",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { after: 120 },
+            tabStops: tabStops
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Figure 4.2: User Interface Mockup",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: '\t',
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: "31",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { after: 120 },
+            tabStops: tabStops
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Figure 5.1: Application Flow Diagram",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: '\t',
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: "36",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { after: 120 },
+            tabStops: tabStops
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Figure 5.2: JDBC Connection Flow",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: '\t',
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: "38",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { after: 120 },
+            tabStops: tabStops
+        }),
+
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: "Figure 6.1: Test Results Dashboard",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: '\t',
+                    size: 24,
+                    font: "Times New Roman"
+                }),
+                new TextRun({
+                    text: "43",
+                    bold: false,
+                    size: 24,
+                    font: "Times New Roman"
+                })
+            ],
+            alignment: AlignmentType.LEFT,
+            spacing: { after: 120 },
+            tabStops: tabStops
         })
     ];
 }
