@@ -13,10 +13,10 @@
     "docx": "^8.0.0"
   },
   "devDependencies": {
-    "vercel": "^33.0.0"
+    "vercel": "^35.0.0"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "keywords": [
     "ai",
