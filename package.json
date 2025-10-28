@@ -1,12 +1,12 @@
 {
   "name": "ai-report-generator",
   "version": "1.0.0",
-  "description": "Universal AI-Powered Report Generator for ANY Topic",
-  "main": "api/generate-report.js",
+  "description": "AI-Powered Report Generator",
+  "main": "index.html",
   "scripts": {
-    "start": "node api/generate-report.js",
-    "test": "node test-universal-api.js",
-    "dev": "vercel dev"
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "echo 'Static site - no start command needed'"
   },
   "dependencies": {
     "docx": "^8.5.0"
@@ -19,9 +19,8 @@
     "report",
     "generator",
     "docx",
-    "universal",
     "academic"
   ],
-  "author": "AI Report Generator Team",
+  "author": "AI Report Generator",
   "license": "MIT"
 }
