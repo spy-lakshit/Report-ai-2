@@ -43,7 +43,27 @@ module.exports = async (req, res) => {
 
     } catch (error) {
         console.error('❌ Report generation error:', error);
-        res.status(500).json({ error: 'Failed to generate report', details: error.message });
+        
+        // Ensure we always return JSON for errors
+        res.setHeader('Content-Type', 'application/json');
+        
+        let errorMessage = 'Failed to generate report';
+        let errorDetails = error.message;
+        
+        // Handle specific error types
+        if (error.message.includes('API key')) {
+            errorMessage = 'Invalid API key. Please check your Gemini API key.';
+        } else if (error.message.includes('timeout') || error.message.includes('TIMEOUT')) {
+            errorMessage = 'Request timed out. Please try again.';
+        } else if (error.message.includes('fetch')) {
+            errorMessage = 'Network error. Please check your internet connection.';
+        }
+        
+        res.status(500).json({ 
+            error: errorMessage, 
+            details: errorDetails,
+            timestamp: new Date().toISOString()
+        });
     }
 };
 
@@ -249,6 +269,11 @@ Write ONLY the section content, no headings or formatting.`;
 // Call Gemini AI API
 async function callGeminiAPI(prompt, apiKey) {
     try {
+        // Validate API key format
+        if (!apiKey || apiKey === 'demo-key-placeholder' || apiKey.length < 10) {
+            throw new Error('Invalid API key. Please provide a valid Gemini API key from Google AI Studio.');
+        }
+
         const response = await fetch(`${GEMINI_BASE_URL}/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: {
@@ -270,10 +295,25 @@ async function callGeminiAPI(prompt, apiKey) {
         });
 
         if (!response.ok) {
-            throw new Error(`Gemini API error: ${response.status}`);
+            const errorText = await response.text();
+            
+            if (response.status === 400) {
+                throw new Error('Invalid API key or request. Please check your Gemini API key.');
+            } else if (response.status === 403) {
+                throw new Error('API key access denied. Please check your Gemini API key permissions.');
+            } else if (response.status === 429) {
+                throw new Error('API rate limit exceeded. Please try again in a few minutes.');
+            } else {
+                throw new Error(`Gemini API error (${response.status}): ${errorText.substring(0, 100)}`);
+            }
         }
 
         const data = await response.json();
+        
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+            throw new Error('Invalid response from Gemini API. Please try again.');
+        }
+        
         const content = data.candidates[0].content.parts[0].text;
 
         // Try to parse as JSON if it looks like JSON, otherwise return as text
@@ -284,8 +324,15 @@ async function callGeminiAPI(prompt, apiKey) {
         }
     } catch (error) {
         console.error('Gemini API error:', error);
+        
+        // Re-throw API key errors
+        if (error.message.includes('API key') || error.message.includes('access denied')) {
+            throw error;
+        }
+        
         // Fallback to basic structure if AI fails
         if (prompt.includes('JSON array of 4 section titles')) {
+            console.log('Using fallback section titles due to API error');
             return [
                 "Overview and Background",
                 "Technical Analysis",
@@ -293,6 +340,7 @@ async function callGeminiAPI(prompt, apiKey) {
                 "Results and Discussion"
             ];
         } else {
+            console.log('Using fallback content due to API error');
             return `This section provides comprehensive coverage of the topic with detailed analysis and practical implementation considerations relevant to the project. The development process involves systematic analysis of requirements, careful design of system architecture, and implementation of robust solutions that meet both functional and non-functional requirements. Through iterative development and continuous testing, the project demonstrates effective application of software engineering principles and database management techniques.`;
         }
     }

@@ -505,22 +505,48 @@
                 });
                 
                 if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${config.studentName.replace(/\s+/g, '_')}_AI_Report_${new Date().toISOString().split('T')[0]}.docx`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
+                    // Check if response is actually a file (docx) or an error
+                    const contentType = response.headers.get('content-type');
                     
-                    showSuccess();
+                    if (contentType && contentType.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
+                        // It's a Word document - download it
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${config.studentName.replace(/\s+/g, '_')}_AI_Report_${new Date().toISOString().split('T')[0]}.docx`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        
+                        showSuccess();
+                    } else {
+                        // It might be an error response
+                        const text = await response.text();
+                        throw new Error('Server returned unexpected response: ' + text.substring(0, 100));
+                    }
                 } else {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to generate report');
+                    // Handle error response
+                    let errorMessage = 'Failed to generate report';
+                    
+                    try {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            const errorData = await response.json();
+                            errorMessage = errorData.error || errorData.details || errorMessage;
+                        } else {
+                            const text = await response.text();
+                            errorMessage = text.substring(0, 200) || errorMessage;
+                        }
+                    } catch (parseError) {
+                        errorMessage = `Server error (${response.status}): ${response.statusText}`;
+                    }
+                    
+                    throw new Error(errorMessage);
                 }
             } catch (error) {
+                console.error('Generation error:', error);
                 showError(error.message);
             } finally {
                 stopProgressTracking();
