@@ -339,7 +339,7 @@
     <div class="container">
         <div class="header">
             <h1>🤖 AI Report Generator</h1>
-            <p>Professional • AI-Powered • Complete Academic Reports</p>
+            <p>Professional • AI-Powered • Balanced Academic Reports</p>
         </div>
 
         <div class="form-container">
@@ -495,8 +495,8 @@
             startProgressTracking();
             
             try {
-                // Call the complete API (with all academic features)
-                const response = await fetch('/api/generate-report', {
+                // Call the balanced API (essential features + no timeouts)
+                const response = await fetch('/api/generate-report-balanced', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -586,7 +586,7 @@
                 updateProgressUI(currentProgress, 'generating', `✍️ AI writing Chapter ${chapterNum} with full content...`, `Chapter ${chapterNum}`, wordsGenerated);
             } else if (currentProgress < 100) {
                 currentProgress += 2;
-                updateProgressUI(currentProgress, 'formatting', '🎨 Adding TOC, page numbers, references...', 'Final Formatting', 15000);
+                updateProgressUI(currentProgress, 'formatting', '🎨 Adding TOC, page numbers, references...', 'Final Formatting', 8000);
             }
             
             // Ensure we don't exceed 100%
@@ -657,7 +657,7 @@
             progressContainer.innerHTML = `
                 <div class="success-message">
                     <h3>🎉 Report Generated Successfully!</h3>
-                    <p><strong>15,000+ words</strong> • Complete Academic Format • TOC • Abstract • Acknowledgment</p>
+                    <p><strong>8,000+ words</strong> • Academic Format • TOC • Abstract • Acknowledgment • 30+ Pages</p>
                     <p>Your report has been downloaded automatically!</p>
                     <button class="download-btn" onclick="location.reload()">Generate Another Report</button>
                 </div>
