@@ -249,7 +249,7 @@ Write ONLY the section content, no headings or formatting.`;
 // Call Gemini AI API
 async function callGeminiAPI(prompt, apiKey) {
     try {
-        const response = await fetch(`${GEMINI_BASE_URL}/models/gemini-pro:generateContent?key=${apiKey}`, {
+        const response = await fetch(`${GEMINI_BASE_URL}/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -293,7 +293,7 @@ async function callGeminiAPI(prompt, apiKey) {
                 "Results and Discussion"
             ];
         } else {
-            return `This section provides comprehensive coverage of the topic with detailed analysis and practical implementation considerations relevant to ${config.projectTitle}. The development process involves systematic analysis of requirements, careful design of system architecture, and implementation of robust solutions that meet both functional and non-functional requirements. Through iterative development and continuous testing, the project demonstrates effective application of software engineering principles and database management techniques.`;
+            return `This section provides comprehensive coverage of the topic with detailed analysis and practical implementation considerations relevant to the project. The development process involves systematic analysis of requirements, careful design of system architecture, and implementation of robust solutions that meet both functional and non-functional requirements. Through iterative development and continuous testing, the project demonstrates effective application of software engineering principles and database management techniques.`;
         }
     }
 }
