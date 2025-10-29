@@ -507,8 +507,8 @@
             startProgressTracking();
 
             try {
-                // Call the minimal API (bulletproof + guaranteed to work)
-                const response = await fetch('/api/generate-report-minimal', {
+                // Call the enhanced API (full features + AI + reliable fallback)
+                const response = await fetch('/api/generate-report-enhanced', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -584,21 +584,21 @@
             const minutes = Math.floor(elapsed / 60000);
             const seconds = Math.floor((elapsed % 60000) / 1000);
 
-            // Simulate realistic progress for complete academic report
-            if (currentProgress < 15) {
-                currentProgress += 2;
-                updateProgressUI(currentProgress, 'analysis', '🧠 AI analyzing project for comprehensive report...', 'Project Analysis', 0);
-            } else if (currentProgress < 25) {
+            // Simulate realistic progress for enhanced academic report
+            if (currentProgress < 10) {
                 currentProgress += 1;
-                updateProgressUI(currentProgress, 'planning', '📋 Creating complete academic structure with TOC...', 'Academic Planning', 0);
-            } else if (currentProgress < 90) {
-                currentProgress += Math.random() * 3 + 1;
-                const chapterNum = Math.floor((currentProgress - 25) / 10) + 1;
-                const wordsGenerated = Math.floor((currentProgress - 25) * 230);
-                updateProgressUI(currentProgress, 'generating', `✍️ AI writing Chapter ${chapterNum} with full content...`, `Chapter ${chapterNum}`, wordsGenerated);
+                updateProgressUI(currentProgress, 'analysis', '🧠 AI analyzing project requirements...', 'Project Analysis', 0);
+            } else if (currentProgress < 20) {
+                currentProgress += 1;
+                updateProgressUI(currentProgress, 'planning', '📋 Creating academic structure with 6 chapters...', 'Academic Planning', 0);
+            } else if (currentProgress < 85) {
+                currentProgress += Math.random() * 2 + 0.5;
+                const chapterNum = Math.floor((currentProgress - 20) / 11) + 1;
+                const wordsGenerated = Math.floor((currentProgress - 20) * 150);
+                updateProgressUI(currentProgress, 'generating', `✍️ AI generating Chapter ${chapterNum} content...`, `Chapter ${chapterNum}`, wordsGenerated);
             } else if (currentProgress < 100) {
-                currentProgress += 2;
-                updateProgressUI(currentProgress, 'formatting', '🎨 Adding TOC, page numbers, references...', 'Final Formatting', 8000);
+                currentProgress += 1;
+                updateProgressUI(currentProgress, 'formatting', '🎨 Creating TOC, headers, page numbers...', 'Final Formatting', 10000);
             }
 
             // Ensure we don't exceed 100%
@@ -669,7 +669,7 @@
             progressContainer.innerHTML = `
                 <div class="success-message">
                     <h3>🎉 Report Generated Successfully!</h3>
-                    <p><strong>8,000+ words</strong> • Academic Format • TOC • Abstract • Acknowledgment • 30+ Pages</p>
+                    <p><strong>10,000+ words</strong> • 6 Chapters • TOC • Abstract • Acknowledgment • AI Content • 25+ Pages</p>
                     <p>Your report has been downloaded automatically!</p>
                     <button class="download-btn" onclick="location.reload()">Generate Another Report</button>
                 </div>
