@@ -507,8 +507,8 @@
             startProgressTracking();
 
             try {
-                // Call the balanced API (essential features + no timeouts)
-                const response = await fetch('/api/generate-report-balanced', {
+                // Call the minimal API (bulletproof + guaranteed to work)
+                const response = await fetch('/api/generate-report-minimal', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

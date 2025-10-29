@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +24,7 @@
             margin: 0 auto;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
@@ -67,7 +68,9 @@
             font-size: 14px;
         }
 
-        input, select, textarea {
+        input,
+        select,
+        textarea {
             width: 100%;
             padding: 12px 16px;
             border: 2px solid #e1e5e9;
@@ -77,7 +80,9 @@
             background: #f8f9fa;
         }
 
-        input:focus, select:focus, textarea:focus {
+        input:focus,
+        select:focus,
+        textarea:focus {
             outline: none;
             border-color: #4facfe;
             background: white;
@@ -184,13 +189,18 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
             animation: shimmer 2s infinite;
         }
 
         @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
         }
 
         .progress-stages {
@@ -289,7 +299,8 @@
             text-align: center;
         }
 
-        .download-btn, .retry-btn {
+        .download-btn,
+        .retry-btn {
             padding: 15px 30px;
             border: none;
             border-radius: 8px;
@@ -324,7 +335,7 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
-            
+
             .progress-stages {
                 grid-template-columns: 1fr;
             }
@@ -335,6 +346,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -394,16 +406,16 @@
 
                 <div class="form-group">
                     <label for="projectDescription">Project Description *</label>
-                    <textarea id="projectDescription" name="projectDescription" required 
-                              placeholder="Describe your project, its objectives, methodology, and key features..."></textarea>
+                    <textarea id="projectDescription" name="projectDescription" required
+                        placeholder="Describe your project, its objectives, methodology, and key features..."></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="apiKey">Gemini API Key *</label>
-                    <input type="password" id="apiKey" name="apiKey" required 
-                           placeholder="Enter your Gemini API key">
+                    <input type="password" id="apiKey" name="apiKey" required placeholder="Enter your Gemini API key">
                     <small class="api-key-help">
-                        🔑 Get your free API key from <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a>
+                        🔑 Get your free API key from <a href="https://makersuite.google.com/app/apikey"
+                            target="_blank">Google AI Studio</a>
                     </small>
                 </div>
 
@@ -476,12 +488,12 @@
         let startTime;
         let currentProgress = 0;
 
-        document.getElementById('reportForm').addEventListener('submit', async function(e) {
+        document.getElementById('reportForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const formData = new FormData(e.target);
             const config = Object.fromEntries(formData.entries());
-            
+
             // Validate required fields
             const requiredFields = ['studentName', 'studentId', 'course', 'semester', 'institution', 'supervisor', 'projectTitle', 'projectDescription', 'reportType', 'apiKey'];
             for (const field of requiredFields) {
@@ -490,24 +502,24 @@
                     return;
                 }
             }
-            
+
             // Start progress tracking
             startProgressTracking();
-            
+
             try {
-                // Call the balanced API (essential features + no timeouts)
-                const response = await fetch('/api/generate-report-balanced', {
+                // Call the minimal API (bulletproof + guaranteed to work)
+                const response = await fetch('/api/generate-report-minimal', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(config)
                 });
-                
+
                 if (response.ok) {
                     // Check if response is actually a file (docx) or an error
                     const contentType = response.headers.get('content-type');
-                    
+
                     if (contentType && contentType.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
                         // It's a Word document - download it
                         const blob = await response.blob();
@@ -519,7 +531,7 @@
                         a.click();
                         document.body.removeChild(a);
                         window.URL.revokeObjectURL(url);
-                        
+
                         showSuccess();
                     } else {
                         // It might be an error response
@@ -529,7 +541,7 @@
                 } else {
                     // Handle error response
                     let errorMessage = 'Failed to generate report';
-                    
+
                     try {
                         const contentType = response.headers.get('content-type');
                         if (contentType && contentType.includes('application/json')) {
@@ -542,7 +554,7 @@
                     } catch (parseError) {
                         errorMessage = `Server error (${response.status}): ${response.statusText}`;
                     }
-                    
+
                     throw new Error(errorMessage);
                 }
             } catch (error) {
@@ -552,26 +564,26 @@
                 stopProgressTracking();
             }
         });
-        
+
         function startProgressTracking() {
             startTime = Date.now();
             currentProgress = 0;
-            
+
             // Show progress container
             document.getElementById('progressContainer').style.display = 'block';
             document.getElementById('generateBtn').disabled = true;
             document.getElementById('generateBtn').textContent = '🤖 Generating Report...';
-            
+
             // Start progress simulation (realistic for complete academic report)
             progressInterval = setInterval(updateProgress, 3000); // Update every 3 seconds
             updateProgress(); // Initial call
         }
-        
+
         function updateProgress() {
             const elapsed = Date.now() - startTime;
             const minutes = Math.floor(elapsed / 60000);
             const seconds = Math.floor((elapsed % 60000) / 1000);
-            
+
             // Simulate realistic progress for complete academic report
             if (currentProgress < 15) {
                 currentProgress += 2;
@@ -588,11 +600,11 @@
                 currentProgress += 2;
                 updateProgressUI(currentProgress, 'formatting', '🎨 Adding TOC, page numbers, references...', 'Final Formatting', 8000);
             }
-            
+
             // Ensure we don't exceed 100%
             currentProgress = Math.min(currentProgress, 100);
         }
-        
+
         function updateProgressUI(percentage, stage, status, chapter, words) {
             document.getElementById('progressPercentage').textContent = `${Math.floor(percentage)}%`;
             document.getElementById('progressStatus').textContent = status;
@@ -600,25 +612,25 @@
             document.getElementById('currentChapter').textContent = chapter;
             document.getElementById('wordsGenerated').textContent = words.toLocaleString();
             document.getElementById('statusValue').textContent = stage.charAt(0).toUpperCase() + stage.slice(1);
-            
+
             // Update time remaining
             const remainingTime = Math.max(0, Math.floor((100 - percentage) * 8)); // Rough estimate in seconds
             const remainingMinutes = Math.floor(remainingTime / 60);
             const remainingSeconds = remainingTime % 60;
-            document.getElementById('timeRemaining').textContent = 
+            document.getElementById('timeRemaining').textContent =
                 remainingTime > 60 ? `${remainingMinutes}m ${remainingSeconds}s` : `${remainingSeconds}s`;
-            
+
             // Update stage indicators
             updateStageIndicators(stage);
         }
-        
+
         function updateStageIndicators(currentStage) {
             const stages = ['analysis', 'planning', 'generating', 'formatting'];
             const currentIndex = stages.indexOf(currentStage);
-            
+
             stages.forEach((stage, index) => {
                 const element = document.getElementById(`stage-${stage}`);
-                
+
                 if (index < currentIndex) {
                     element.className = 'progress-stage completed';
                     element.querySelector('.stage-icon').textContent = '✅';
@@ -631,7 +643,7 @@
                 }
             });
         }
-        
+
         function getStageIcon(stage) {
             const icons = {
                 'analysis': '🧠',
@@ -641,17 +653,17 @@
             };
             return icons[stage] || '⏳';
         }
-        
+
         function stopProgressTracking() {
             if (progressInterval) {
                 clearInterval(progressInterval);
                 progressInterval = null;
             }
-            
+
             document.getElementById('generateBtn').disabled = false;
             document.getElementById('generateBtn').textContent = '🚀 Generate AI-Powered Report';
         }
-        
+
         function showSuccess() {
             const progressContainer = document.getElementById('progressContainer');
             progressContainer.innerHTML = `
@@ -663,7 +675,7 @@
                 </div>
             `;
         }
-        
+
         function showError(message) {
             const progressContainer = document.getElementById('progressContainer');
             progressContainer.innerHTML = `
@@ -676,4 +688,5 @@
         }
     </script>
 </body>
+
 </html>
