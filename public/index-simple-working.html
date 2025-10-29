@@ -339,7 +339,7 @@
     <div class="container">
         <div class="header">
             <h1>🤖 AI Report Generator</h1>
-            <p>Professional • AI-Powered • 15,000+ Words</p>
+            <p>Professional • AI-Powered • Fast Generation</p>
         </div>
 
         <div class="form-container">
@@ -495,8 +495,8 @@
             startProgressTracking();
             
             try {
-                // Call the working API
-                const response = await fetch('/api/generate-report-working', {
+                // Call the fast API (optimized for serverless)
+                const response = await fetch('/api/generate-report-fast', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -562,8 +562,8 @@
             document.getElementById('generateBtn').disabled = true;
             document.getElementById('generateBtn').textContent = '🤖 Generating Report...';
             
-            // Start progress simulation
-            progressInterval = setInterval(updateProgress, 3000); // Update every 3 seconds
+            // Start progress simulation (faster for optimized generation)
+            progressInterval = setInterval(updateProgress, 2000); // Update every 2 seconds
             updateProgress(); // Initial call
         }
         
@@ -572,21 +572,21 @@
             const minutes = Math.floor(elapsed / 60000);
             const seconds = Math.floor((elapsed % 60000) / 1000);
             
-            // Simulate realistic progress
-            if (currentProgress < 15) {
-                currentProgress += 2;
+            // Simulate realistic progress for fast generation
+            if (currentProgress < 20) {
+                currentProgress += 3;
                 updateProgressUI(currentProgress, 'analysis', '🧠 Analyzing project type and requirements...', 'Analysis Phase', 0);
-            } else if (currentProgress < 25) {
-                currentProgress += 1;
-                updateProgressUI(currentProgress, 'planning', '📋 Generating dynamic chapter structure...', 'Chapter Planning', 0);
-            } else if (currentProgress < 90) {
-                currentProgress += Math.random() * 3 + 1;
-                const chapterNum = Math.floor((currentProgress - 25) / 10) + 1;
-                const wordsGenerated = Math.floor((currentProgress - 25) * 200);
+            } else if (currentProgress < 35) {
+                currentProgress += 2;
+                updateProgressUI(currentProgress, 'planning', '📋 Generating optimized chapter structure...', 'Chapter Planning', 0);
+            } else if (currentProgress < 85) {
+                currentProgress += Math.random() * 4 + 2;
+                const chapterNum = Math.floor((currentProgress - 35) / 12) + 1;
+                const wordsGenerated = Math.floor((currentProgress - 35) * 100);
                 updateProgressUI(currentProgress, 'generating', `✍️ AI writing Chapter ${chapterNum}...`, `Chapter ${chapterNum}`, wordsGenerated);
             } else if (currentProgress < 100) {
-                currentProgress += 2;
-                updateProgressUI(currentProgress, 'formatting', '🎨 Applying professional formatting...', 'Document Formatting', 15000);
+                currentProgress += 3;
+                updateProgressUI(currentProgress, 'formatting', '🎨 Applying professional formatting...', 'Document Formatting', 5000);
             }
             
             // Ensure we don't exceed 100%
@@ -657,7 +657,7 @@
             progressContainer.innerHTML = `
                 <div class="success-message">
                     <h3>🎉 Report Generated Successfully!</h3>
-                    <p><strong>15,000+ words</strong> • Professional formatting • AI-powered content</p>
+                    <p><strong>5,000+ words</strong> • Professional formatting • AI-powered content</p>
                     <p>Your report has been downloaded automatically!</p>
                     <button class="download-btn" onclick="location.reload()">Generate Another Report</button>
                 </div>
