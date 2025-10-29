@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
 
     try {
         const config = req.body;
-        const required = ['studentName', 'studentId', 'course', 'semester', 'institution', 'supervisor', 'projectTitle', 'projectDescription', 'reportType'];
+        const required = ['studentName', 'studentId', 'course', 'semester', 'institution', 'supervisor', 'projectTitle', 'projectDescription', 'reportType', 'apiKey'];
 
         for (const field of required) {
             if (!config[field] || config[field].trim() === '') {
@@ -25,8 +25,8 @@ module.exports = async (req, res) => {
 
         console.log(`🤖 Starting TRUE AI-powered 15,000+ word report generation for: ${config.projectTitle}`);
 
-        // Use user's API key if provided, otherwise use built-in
-        const apiKey = config.apiKey || GEMINI_API_KEY;
+        // Use user's API key (required)
+        const apiKey = config.apiKey;
 
         // Generate massive report with REAL AI (15,000+ words)
         const reportBuffer = await generateMassiveAIReport(config, apiKey);
