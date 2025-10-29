@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
 
     try {
         const config = req.body;
-        const required = ['studentName', 'studentId', 'course', 'semester', 'institution', 'supervisor', 'projectTitle', 'projectDescription', 'reportType'];
+        const required = ['studentName', 'studentId', 'course', 'semester', 'institution', 'supervisor', 'projectTitle', 'projectDescription', 'reportType', 'apiKey'];
 
         for (const field of required) {
             if (!config[field] || config[field].trim() === '') {
@@ -268,9 +268,35 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Import existing functions from the original generator
+// Generate dynamic chapter titles based on report type and project topic
 async function generateDynamicChapterTitles(config, apiKey) {
-    // ... (copy from original file)
+    const prompt = `Based on the report type "${config.reportType}" and project "${config.projectTitle}" with description "${config.projectDescription}", suggest 7 appropriate chapter titles.
+
+Report Type Guidelines:
+- THESIS REPORT: Deep research focus - Literature Review, Data Collection, Analysis, Findings
+- INTERNSHIP REPORT: Practical experience focus - Company Background, Role, Tasks, Skills Learned, Challenges
+- PROJECT REPORT: Implementation focus - Objectives, Methodology, Implementation, Results
+
+Requirements:
+- Keep titles SHORT and professional (1-3 words each)
+- Make them specific to the report type and project topic
+- Use UPPERCASE format
+- Always include INTRODUCTION as first and CONCLUSION as last
+- Adapt structure based on report type
+
+Respond with ONLY a JSON array of 7 chapter titles, like:
+["INTRODUCTION", "BACKGROUND", "METHODOLOGY", "DESIGN", "IMPLEMENTATION", "TESTING", "CONCLUSION"]`;
+
+    try {
+        const result = await callGeminiAPI(prompt, apiKey);
+        if (Array.isArray(result)) {
+            return result;
+        }
+    } catch (error) {
+        console.error('Failed to generate dynamic chapter titles:', error);
+    }
+    
+    // Fallback chapter titles based on report type
     const fallbackTitles = {
         'thesis': ["INTRODUCTION", "LITERATURE REVIEW", "RESEARCH METHODOLOGY", "DATA ANALYSIS", "FINDINGS", "DISCUSSION", "CONCLUSION"],
         'internship': ["INTRODUCTION", "COMPANY OVERVIEW", "ROLE AND RESPONSIBILITIES", "TASKS AND PROJECTS", "SKILLS DEVELOPMENT", "CHALLENGES AND SOLUTIONS", "CONCLUSION"],
@@ -284,7 +310,26 @@ async function generateDynamicChapterTitles(config, apiKey) {
 }
 
 async function generateSectionTitles(chapterTitle, chapterIndex, config, apiKey) {
-    // ... (copy from original file)
+    const prompt = `For a chapter titled "${chapterTitle}" in an academic ${config.reportType} about "${config.projectTitle}", suggest 4 appropriate section titles.
+
+Project Context: ${config.projectDescription}
+Course: ${config.course}
+
+Make the sections comprehensive and academic. For Java/Database projects, include technical implementation details.
+
+Respond with ONLY a JSON array of 4 section titles, like:
+["Section 1 Title", "Section 2 Title", "Section 3 Title", "Section 4 Title"]`;
+
+    try {
+        const result = await callGeminiAPI(prompt, apiKey);
+        if (Array.isArray(result)) {
+            return result;
+        }
+    } catch (error) {
+        console.error('Failed to generate section titles:', error);
+    }
+
+    // Fallback section titles if AI fails
     const fallbackSections = {
         0: ["Background and Motivation", "Problem Statement", "Objectives and Goals", "Scope and Limitations"],
         1: ["Theoretical Background", "Technology Review", "Related Work Analysis", "Research Gap Identification"],
@@ -299,8 +344,44 @@ async function generateSectionTitles(chapterTitle, chapterIndex, config, apiKey)
 }
 
 async function generateDetailedSectionContent(chapterTitle, sectionTitle, chapterNum, sectionNum, config, apiKey) {
-    // Generate realistic content based on the section
-    const baseContent = `This section provides comprehensive coverage of ${sectionTitle} within the context of ${chapterTitle}. The development process involves systematic analysis of requirements, careful design of system architecture, and implementation of robust solutions that meet both functional and non-functional requirements.
+    const prompt = `Write a comprehensive academic section for "${sectionTitle}" in Chapter ${chapterNum}: "${chapterTitle}" of a ${config.reportType} about "${config.projectTitle}".
+
+Project Details:
+- Title: ${config.projectTitle}
+- Description: ${config.projectDescription}
+- Course: ${config.course}
+- Student: ${config.studentName}
+- Institution: ${config.institution}
+- Report Type: ${config.reportType}
+
+Requirements:
+- Write 500-700 words of original, detailed academic content
+- Use formal academic language with technical depth
+- Include specific implementation details, code concepts, database design principles
+- Make it unique and contextual to this project
+- Include practical examples and real-world applications
+- Discuss technical challenges and solutions
+- Reference industry best practices
+- Do not use placeholder text or generic content
+- Focus on comprehensive coverage of the topic
+
+Write ONLY the section content, no headings or formatting.`;
+
+    try {
+        const content = await callGeminiAPI(prompt, apiKey);
+        
+        // Ensure minimum word count with fallback content
+        const words = content.split(' ').length;
+        if (words < 400) {
+            return content + `\n\nThis implementation demonstrates the practical application of ${config.projectTitle} concepts in real-world scenarios. The development process involves careful consideration of software engineering principles, database normalization techniques, and user experience design. Through systematic analysis and iterative development, the project achieves its objectives while maintaining code quality and performance standards. The integration of modern programming techniques with database management showcases the effectiveness of contemporary development methodologies in creating robust, scalable applications that meet industry requirements and academic standards.`;
+        }
+        
+        return content;
+    } catch (error) {
+        console.error('Failed to generate section content:', error);
+        
+        // Fallback content
+        return `This section provides comprehensive coverage of ${sectionTitle} within the context of ${chapterTitle}. The development process involves systematic analysis of requirements, careful design of system architecture, and implementation of robust solutions that meet both functional and non-functional requirements.
 
 The ${config.projectTitle} project demonstrates effective application of software engineering principles and modern development methodologies. Through iterative development and continuous testing, the system achieves its objectives while maintaining code quality and performance standards.
 
@@ -308,30 +389,294 @@ Key considerations include scalability, maintainability, and user experience des
 
 The technical approach emphasizes modular design, proper separation of concerns, and comprehensive error handling. Database design follows normalization principles while optimizing for performance and data integrity.
 
-Testing strategies encompass unit testing, integration testing, and user acceptance testing to ensure system reliability and functionality. Performance optimization techniques are applied throughout the development lifecycle to maintain responsive user interactions and efficient resource utilization.`;
+Testing strategies encompass unit testing, integration testing, and user acceptance testing to ensure system reliability and functionality. Performance optimization techniques are applied throughout the development lifecycle to maintain responsive user interactions and efficient resource utilization.
 
-    return baseContent;
+This comprehensive approach ensures that the ${config.projectTitle} system meets all specified requirements while providing a foundation for future enhancements and modifications. The systematic methodology employed throughout the development process demonstrates adherence to professional software development standards and academic excellence.`;
+    }
+}
+
+// Call Gemini AI API
+async function callGeminiAPI(prompt, apiKey) {
+    try {
+        const response = await fetch(`${GEMINI_BASE_URL}/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    topK: 40,
+                    topP: 0.95,
+                    maxOutputTokens: 2048,
+                }
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Gemini API error: ${response.status} - ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+            throw new Error('Invalid response from Gemini API');
+        }
+        
+        const content = data.candidates[0].content.parts[0].text;
+
+        // Try to parse as JSON if it looks like JSON, otherwise return as text
+        try {
+            return JSON.parse(content);
+        } catch {
+            return content.trim();
+        }
+    } catch (error) {
+        console.error('Gemini API error:', error);
+        throw error;
+    }
 }
 
 async function createLakshayDocument(config, chapters) {
-    // Simplified document creation for now
-    // In production, use the full document creation from the original file
+    // Create header with project title (left-aligned)
+    const createHeader = () => new Header({
+        children: [
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: config.projectTitle,
+                        font: "Times New Roman",
+                        size: 20,
+                        italics: true
+                    })
+                ],
+                alignment: AlignmentType.LEFT,
+                spacing: { before: 0, after: 0 }
+            })
+        ]
+    });
+
+    // Create footer with page number (right-aligned)
+    const createFooter = () => new Footer({
+        children: [
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        children: [PageNumber.CURRENT],
+                        font: "Times New Roman",
+                        size: 24
+                    })
+                ],
+                alignment: AlignmentType.RIGHT,
+                spacing: { before: 0, after: 0 }
+            })
+        ]
+    });
+
+    // Create main content
+    const mainContent = [];
+
+    chapters.forEach((chapter, index) => {
+        if (index > 0) {
+            mainContent.push(new Paragraph({ children: [new PageBreak()] }));
+        }
+
+        // Chapter title
+        mainContent.push(
+            new Paragraph({
+                children: [new TextRun({
+                    text: `Chapter ${chapter.number}: ${chapter.title}`,
+                    bold: true,
+                    size: 28,
+                    font: "Times New Roman"
+                })],
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 480, after: 360 }
+            })
+        );
+
+        // Chapter content with proper formatting
+        const paragraphs = createFormattedParagraphs(chapter.content);
+        mainContent.push(...paragraphs);
+    });
+
+    // Create the complete document
     const doc = new Document({
-        sections: [{
-            children: [
-                new Paragraph({
-                    children: [new TextRun({
-                        text: `${config.projectTitle} - Generated Report`,
-                        bold: true,
-                        size: 32
-                    })],
-                    alignment: AlignmentType.CENTER
-                })
-            ]
-        }]
+        sections: [
+            // Cover page
+            {
+                children: createCoverPage(config),
+                footers: { default: new Footer({ children: [] }) },
+                properties: {
+                    page: {
+                        pageNumbers: { start: 1, formatType: NumberFormat.NONE },
+                        margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+                    }
+                }
+            },
+
+            // Main content with arabic numerals
+            {
+                children: mainContent,
+                headers: { default: createHeader() },
+                footers: { default: createFooter() },
+                properties: {
+                    page: {
+                        pageNumbers: { start: 1, formatType: NumberFormat.DECIMAL },
+                        margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+                    }
+                }
+            }
+        ],
+        styles: {
+            default: {
+                document: {
+                    run: { size: 24, font: "Times New Roman" },
+                    paragraph: { spacing: { line: 360 } }
+                }
+            }
+        }
     });
 
     return await Packer.toBuffer(doc);
+}
+
+// Helper functions
+function createFormattedParagraphs(text) {
+    const paragraphs = [];
+    const lines = text.split('\n').filter(line => line.trim());
+
+    for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) continue;
+
+        if (trimmedLine.match(/^\d+\.\d+/)) {
+            // Section headings
+            paragraphs.push(
+                new Paragraph({
+                    children: [new TextRun({
+                        text: trimmedLine,
+                        bold: true,
+                        size: 26,
+                        font: "Times New Roman"
+                    })],
+                    alignment: AlignmentType.LEFT,
+                    spacing: { before: 360, after: 240, line: 360 }
+                })
+            );
+        } else {
+            // Regular paragraphs
+            paragraphs.push(
+                new Paragraph({
+                    children: [new TextRun({
+                        text: trimmedLine,
+                        size: 24,
+                        font: "Times New Roman"
+                    })],
+                    alignment: AlignmentType.JUSTIFIED,
+                    spacing: { after: 120, line: 360 }
+                })
+            );
+        }
+    }
+
+    return paragraphs;
+}
+
+function createCoverPage(config) {
+    return [
+        new Paragraph({
+            children: [new TextRun({
+                text: config.institution.toUpperCase(),
+                bold: true,
+                size: 32,
+                font: "Times New Roman"
+            })],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 720, after: 240 }
+        }),
+        new Paragraph({
+            children: [new TextRun({
+                text: `Department of ${config.course}`,
+                bold: true,
+                size: 28,
+                font: "Times New Roman"
+            })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 720 }
+        }),
+        new Paragraph({
+            children: [new TextRun({
+                text: config.projectTitle.toUpperCase(),
+                bold: true,
+                size: 36,
+                font: "Times New Roman"
+            })],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 1440, after: 1440 }
+        }),
+        new Paragraph({
+            children: [new TextRun({
+                text: `A ${config.reportType.toUpperCase()} REPORT`,
+                bold: true,
+                size: 28,
+                font: "Times New Roman"
+            })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 720 }
+        }),
+        new Paragraph({
+            children: [new TextRun({
+                text: `Submitted by: ${config.studentName}`,
+                size: 24,
+                font: "Times New Roman"
+            })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 240 }
+        }),
+        new Paragraph({
+            children: [new TextRun({
+                text: `Student ID: ${config.studentId}`,
+                size: 24,
+                font: "Times New Roman"
+            })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 240 }
+        }),
+        new Paragraph({
+            children: [new TextRun({
+                text: `${config.course} - ${config.semester}`,
+                size: 24,
+                font: "Times New Roman"
+            })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 480 }
+        }),
+        new Paragraph({
+            children: [new TextRun({
+                text: `Under the guidance of: ${config.supervisor}`,
+                size: 24,
+                font: "Times New Roman"
+            })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 480 }
+        }),
+        new Paragraph({
+            children: [new TextRun({
+                text: new Date().getFullYear().toString(),
+                bold: true,
+                size: 28,
+                font: "Times New Roman"
+            })],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 960 }
+        })
+    ];
 }
 
 // Export progress store for status endpoint

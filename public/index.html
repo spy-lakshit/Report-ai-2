@@ -391,6 +391,15 @@
                               placeholder="Describe your project, its objectives, methodology, and key features..."></textarea>
                 </div>
 
+                <div class="form-group">
+                    <label for="apiKey">Gemini API Key *</label>
+                    <input type="password" id="apiKey" name="apiKey" required 
+                           placeholder="Enter your Gemini API key (get it from Google AI Studio)">
+                    <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+                        🔑 Get your free API key from <a href="https://makersuite.google.com/app/apikey" target="_blank" style="color: #4facfe;">Google AI Studio</a>
+                    </small>
+                </div>
+
                 <button type="submit" class="generate-btn" id="generateBtn">
                     🚀 Generate AI-Powered Report
                 </button>
@@ -466,7 +475,7 @@
             const config = Object.fromEntries(formData.entries());
             
             // Validate required fields
-            const requiredFields = ['studentName', 'studentId', 'course', 'semester', 'institution', 'supervisor', 'projectTitle', 'projectDescription', 'reportType'];
+            const requiredFields = ['studentName', 'studentId', 'course', 'semester', 'institution', 'supervisor', 'projectTitle', 'projectDescription', 'reportType', 'apiKey'];
             for (const field of requiredFields) {
                 if (!config[field] || config[field].trim() === '') {
                     alert(`Please fill in the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} field.`);
